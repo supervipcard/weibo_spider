@@ -35,7 +35,7 @@ class DataCheckPipeline(object):
                 raise Exception('评论时间无法解析')
         if isinstance(item, UserItem):
             item['headPortrait'] = item['headPortrait'] if item['headPortrait'] != '//ww1.sinaimg.cn/default/images/default_avatar_male_uploading_180.gif' else None
-            item['membershipGrade'] = int(re.search(r'icon_member(\d)', item['membershipGrade'][0]).group(1)) if item['membershipGrade'] else None
+            item['membershipGrade'] = int(re.search(r'icon_member(\d)', item['membershipGrade'][0]).group(1)) if item['membershipGrade'] and re.search(r'icon_member(\d)', item['membershipGrade'][0]) else None
             item['identity'] = item['identity'][0].strip() if item['identity'] else None
             item['realName'] = item['realName'][0].strip() if item['realName'] else None
             item['area'] = item['area'][0].strip() if item['area'] else None

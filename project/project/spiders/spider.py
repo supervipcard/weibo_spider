@@ -145,12 +145,12 @@ class WeiboSpider(spiders.RedisSpider):
         education_group = html2.xpath('//div[@class="obj_name"]/h2[text()="教育信息"]/parent::div/parent::div/following-sibling::div[1]/div/ul/li')
         for education in education_group:
             school_type = education.xpath('./span[1]/text()')[0].strip()[0: -1]
-            school_list = [i.strip() for i in education.xpath('./span[2]/a/text()') if i.strip()]
-            time_list = [i.strip()[1: -1] for i in education.xpath('./span[2]/text()') if i.strip() and re.search(r'\(\d+年\)', i.strip())]
-            if school_list and time_list:
-                for school_name, year in zip(school_list, time_list):
-                    education_information = {'school_type': school_type, 'school_name': school_name, 'year': year}
-                    item['educationInformation'].append(education_information)
+            education_text = etree.tostring(education, method='html', encoding='utf8').decode('utf8')
+            for cell in re.findall(r'<a .*?>(.*?)</a>(.*?)<br>', education_text):
+                school_name = cell[0].strip() if cell[0].strip() else None
+                year = cell[1].strip()[1: -1] if cell[1].strip() else None
+                if school_name:
+                    item['educationInformation'].append({'school_type': school_type, 'school_name': school_name, 'year': year})
 
         item['tabs'] = html2.xpath('//ul/li/span[text()="标签："]/following-sibling::*[1]/a/text()')
         item['tabs'] = [i.strip() for i in item['tabs'] if i.strip()]
