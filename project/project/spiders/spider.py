@@ -16,7 +16,7 @@ class WeiboSpider(spiders.RedisSpider):
         headers = {
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Cookie': 'SINAGLOBAL=165605077937.38522.1559631746697; un=15058716965; _s_tentry=login.sina.com.cn; Apache=3900361911456.74.1573174984678; ULV=1573174984729:30:4:3:3900361911456.74.1573174984678:1573119308336; wb_view_log_5685522058=1440*9001; login_sid_t=d8646e5095f93f3a4a03d696c20a8b4a; cross_origin_proto=SSL; UOR=,,login.sina.com.cn; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WWHn3dd6RIP37HjXOJgJAZK5JpX5K2hUgL.Fo-c1h-feoz7SKn2dJLoIX5LxKnL1h2LB.BLxK.L1-zLBKnLxKnL1h2LBoz_i--ci-zNiKnfi--ci-zNiKnfi--NiKn7iKL2i--NiKn7iKL2; ALF=1604711067; SSOLoginState=1573175067; SCF=ArQGaPR_6L0mQm1eXmMK2OBLY-EAztaBUkFq8nyNzYYccZWbEBGDqJ2QdJFJW6wEu5bXjLBHmId5Xech4ciNeq0.; SUB=_2A25wwM9MDeRhGeNI41cU8izMzjSIHXVTt6eErDV8PUNbmtAfLUqlkW9NSDGoVVtSv4ul3btnEY6t88Pa7juW7hMO; SUHB=08J7Pw-Yc0StGK; wvr=6; YF-Page-G0=bd9e74eeae022c6566619f45b931d426|1573175857|1573175857; webim_unReadCount=%7B%22time%22%3A1573176212949%2C%22dm_pub_total%22%3A0%2C%22chat_group_client%22%3A0%2C%22allcountNum%22%3A36%2C%22msgbox%22%3A0%7D',
+            'Cookie': 'wb_view_log_6824826871=1440*9001; wb_view_log_5685522058=1440*9001; YF-V5-G0=bae6287b9457a76192e7de61c8d66c9d; Ugrow-G0=140ad66ad7317901fc818d7fd7743564; _s_tentry=weibo.com; appkey=; Apache=5134369581550.486.1573439433047; SINAGLOBAL=5134369581550.486.1573439433047; ULV=1573439433055:1:1:1:5134369581550.486.1573439433047:; SUB=_2A25wzLfNDeRhGeBG6VYZ8ijEzD2IHXVTu64FrDV8PUNbmtANLWP4kW9NRgnh7h1h1NbvWLlSXW-bkvyG8LdpHu1v; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WWsl29zKPAhzBnv9ckgGmDo5JpX5o275NHD95Qc1hzX1hzc1hMpWs4DqcjMi--NiK.Xi-2Ri--ciKnRi-zNSonEShnESonNeBtt; SUHB=0HTh2ChIHD1jBB; ALF=1574044312; SSOLoginState=1573439389; WBtopGlobal_register_version=307744aa77dd5677; cross_origin_proto=SSL; YF-Page-G0=02467fca7cf40a590c28b8459d93fb95|1573440001|1573440001; webim_unReadCount=%7B%22time%22%3A1573440019347%2C%22dm_pub_total%22%3A0%2C%22chat_group_client%22%3A0%2C%22allcountNum%22%3A3%2C%22msgbox%22%3A0%7D',
         }
         yield scrapy.Request(url=url, headers=headers, callback=self.mblog_parse)
 
@@ -43,6 +43,8 @@ class WeiboSpider(spiders.RedisSpider):
             item['comment_count'] = element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]
             item['like_count'] = element.xpath('.//a[@action-type="fl_like"]//em[2]/text()')[0]
             yield item
+            href = 'https://weibo.com/{}/info'.format(item['uid'])
+            yield from self.user_request(href)
             yield from self.comment_paging(mid, 1)
 
     def comment_paging(self, mid, page, previous_page_sign=None):
@@ -50,7 +52,7 @@ class WeiboSpider(spiders.RedisSpider):
         headers = {
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Cookie': 'SINAGLOBAL=165605077937.38522.1559631746697; un=15058716965; _s_tentry=login.sina.com.cn; Apache=3900361911456.74.1573174984678; ULV=1573174984729:30:4:3:3900361911456.74.1573174984678:1573119308336; wb_view_log_5685522058=1440*9001; login_sid_t=d8646e5095f93f3a4a03d696c20a8b4a; cross_origin_proto=SSL; UOR=,,login.sina.com.cn; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WWHn3dd6RIP37HjXOJgJAZK5JpX5K2hUgL.Fo-c1h-feoz7SKn2dJLoIX5LxKnL1h2LB.BLxK.L1-zLBKnLxKnL1h2LBoz_i--ci-zNiKnfi--ci-zNiKnfi--NiKn7iKL2i--NiKn7iKL2; ALF=1604711067; SSOLoginState=1573175067; SCF=ArQGaPR_6L0mQm1eXmMK2OBLY-EAztaBUkFq8nyNzYYccZWbEBGDqJ2QdJFJW6wEu5bXjLBHmId5Xech4ciNeq0.; SUB=_2A25wwM9MDeRhGeNI41cU8izMzjSIHXVTt6eErDV8PUNbmtAfLUqlkW9NSDGoVVtSv4ul3btnEY6t88Pa7juW7hMO; SUHB=08J7Pw-Yc0StGK; wvr=6; YF-Page-G0=bd9e74eeae022c6566619f45b931d426|1573175857|1573175857; webim_unReadCount=%7B%22time%22%3A1573176212949%2C%22dm_pub_total%22%3A0%2C%22chat_group_client%22%3A0%2C%22allcountNum%22%3A36%2C%22msgbox%22%3A0%7D',
+            'Cookie': 'wb_view_log_6824826871=1440*9001; wb_view_log_5685522058=1440*9001; YF-V5-G0=bae6287b9457a76192e7de61c8d66c9d; Ugrow-G0=140ad66ad7317901fc818d7fd7743564; _s_tentry=weibo.com; appkey=; Apache=5134369581550.486.1573439433047; SINAGLOBAL=5134369581550.486.1573439433047; ULV=1573439433055:1:1:1:5134369581550.486.1573439433047:; SUB=_2A25wzLfNDeRhGeBG6VYZ8ijEzD2IHXVTu64FrDV8PUNbmtANLWP4kW9NRgnh7h1h1NbvWLlSXW-bkvyG8LdpHu1v; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WWsl29zKPAhzBnv9ckgGmDo5JpX5o275NHD95Qc1hzX1hzc1hMpWs4DqcjMi--NiK.Xi-2Ri--ciKnRi-zNSonEShnESonNeBtt; SUHB=0HTh2ChIHD1jBB; ALF=1574044312; SSOLoginState=1573439389; WBtopGlobal_register_version=307744aa77dd5677; cross_origin_proto=SSL; YF-Page-G0=02467fca7cf40a590c28b8459d93fb95|1573440001|1573440001; webim_unReadCount=%7B%22time%22%3A1573440019347%2C%22dm_pub_total%22%3A0%2C%22chat_group_client%22%3A0%2C%22allcountNum%22%3A3%2C%22msgbox%22%3A0%7D',
         }
         params = {
             'page': str(page),
@@ -89,9 +91,74 @@ class WeiboSpider(spiders.RedisSpider):
 
     def user_request(self, url):
         headers = {
-            'Cookie': 'SINAGLOBAL=165605077937.38522.1559631746697; un=15058716965; _s_tentry=login.sina.com.cn; Apache=3900361911456.74.1573174984678; ULV=1573174984729:30:4:3:3900361911456.74.1573174984678:1573119308336; wb_view_log_5685522058=1440*9001; login_sid_t=d8646e5095f93f3a4a03d696c20a8b4a; cross_origin_proto=SSL; UOR=,,login.sina.com.cn; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WWHn3dd6RIP37HjXOJgJAZK5JpX5K2hUgL.Fo-c1h-feoz7SKn2dJLoIX5LxKnL1h2LB.BLxK.L1-zLBKnLxKnL1h2LBoz_i--ci-zNiKnfi--ci-zNiKnfi--NiKn7iKL2i--NiKn7iKL2; ALF=1604711067; SSOLoginState=1573175067; SCF=ArQGaPR_6L0mQm1eXmMK2OBLY-EAztaBUkFq8nyNzYYccZWbEBGDqJ2QdJFJW6wEu5bXjLBHmId5Xech4ciNeq0.; SUB=_2A25wwM9MDeRhGeNI41cU8izMzjSIHXVTt6eErDV8PUNbmtAfLUqlkW9NSDGoVVtSv4ul3btnEY6t88Pa7juW7hMO; SUHB=08J7Pw-Yc0StGK; wvr=6; YF-Page-G0=bd9e74eeae022c6566619f45b931d426|1573175857|1573175857; webim_unReadCount=%7B%22time%22%3A1573176212949%2C%22dm_pub_total%22%3A0%2C%22chat_group_client%22%3A0%2C%22allcountNum%22%3A36%2C%22msgbox%22%3A0%7D',
+            'Cookie': 'wb_view_log_6824826871=1440*9001; wb_view_log_5685522058=1440*9001; YF-V5-G0=bae6287b9457a76192e7de61c8d66c9d; Ugrow-G0=140ad66ad7317901fc818d7fd7743564; _s_tentry=weibo.com; appkey=; Apache=5134369581550.486.1573439433047; SINAGLOBAL=5134369581550.486.1573439433047; ULV=1573439433055:1:1:1:5134369581550.486.1573439433047:; SUB=_2A25wzLfNDeRhGeBG6VYZ8ijEzD2IHXVTu64FrDV8PUNbmtANLWP4kW9NRgnh7h1h1NbvWLlSXW-bkvyG8LdpHu1v; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WWsl29zKPAhzBnv9ckgGmDo5JpX5o275NHD95Qc1hzX1hzc1hMpWs4DqcjMi--NiK.Xi-2Ri--ciKnRi-zNSonEShnESonNeBtt; SUHB=0HTh2ChIHD1jBB; ALF=1574044312; SSOLoginState=1573439389; WBtopGlobal_register_version=307744aa77dd5677; cross_origin_proto=SSL; YF-Page-G0=02467fca7cf40a590c28b8459d93fb95|1573440001|1573440001; webim_unReadCount=%7B%22time%22%3A1573440019347%2C%22dm_pub_total%22%3A0%2C%22chat_group_client%22%3A0%2C%22allcountNum%22%3A3%2C%22msgbox%22%3A0%7D',
         }
-        yield scrapy.Request(url=url, headers=headers, callback=self.user_parse)
+        yield scrapy.Request(url=url, headers=headers, meta={'url': url}, callback=self.user_parse)
 
     def user_parse(self, response):
-        print(response.text)
+        item = UserItem()
+        item['url'] = response.meta['url']
+        item['uid'] = re.search(r'\$CONFIG\[\'oid\'\]=\'(.*?)\';', response.text).group(1)
+        item['nickname'] = re.search(r'\$CONFIG\[\'onick\'\]=\'(.*?)\';', response.text).group(1)
+        html1_text = re.search(r'<script>FM\.view\(({"ns":"pl\.header\.head\.index".*?})\)</script>', response.text).group(1)
+        html1_text = json.loads(html1_text)['html']
+        html1 = etree.HTML(html1_text)
+        item['headPortrait'] = html1.xpath('//p[@class="photo_wrap"]/img/@src')[0]
+        item['membershipGrade'] = html1.xpath('//div[@class="pf_username"]/a[@title="微博会员"]/em/@class')
+        item['identity'] = html1.xpath('//div[@class="pf_intro"]/@title')
+
+        html2_text = re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Official_PersonalInfo.*?})\)</script>', response.text).group(1)
+        html2_text = json.loads(html2_text)['html']
+        html2 = etree.HTML(html2_text)
+        item['realName'] = html2.xpath('//ul/li/span[text()="真实姓名："]/following-sibling::*[1]/text()')
+        item['area'] = html2.xpath('//ul/li/span[text()="所在地："]/following-sibling::*[1]/text()')
+        item['sex'] = html2.xpath('//ul/li/span[text()="性别："]/following-sibling::*[1]/text()')
+        item['sexualOrientation'] = html2.xpath('//ul/li/span[text()="性取向："]/following-sibling::*[1]/text()')
+        item['relationshipStatus'] = html2.xpath('//ul/li/span[text()="感情状况："]/following-sibling::*[1]/text()')
+        item['birthday'] = html2.xpath('//ul/li/span[text()="生日："]/following-sibling::*[1]/text()')
+        item['bloodType'] = html2.xpath('//ul/li/span[text()="血型："]/following-sibling::*[1]/text()')
+        item['blog'] = html2.xpath('//ul/li/span[text()="博客："]/following-sibling::*[1]/text()')
+        item['intro'] = html2.xpath('//ul/li/span[text()="简介："]/following-sibling::*[1]/text()')
+        item['registrationDate'] = html2.xpath('//ul/li/span[text()="注册时间："]/following-sibling::*[1]/text()')
+        item['domainHacks'] = html2.xpath('//ul/li/span[text()="个性域名："]/following-sibling::*[1]/a/text()')
+        item['email'] = html2.xpath('//ul/li/span[text()="邮箱："]/following-sibling::*[1]/text()')
+        item['qq'] = html2.xpath('//ul/li/span[text()="QQ："]/following-sibling::*[1]/text()')
+        item['msn'] = html2.xpath('//ul/li/span[text()="MSN："]/following-sibling::*[1]/text()')
+
+        item['jobInformation'] = []
+        job_group = html2.xpath('//ul/li/span[text()="公司："]/following-sibling::*')
+        for job in job_group:
+            text_list = job.xpath('.//text()')
+            text_list = [i.strip() for i in text_list if i.strip()]
+            if text_list:
+                job_information = {'company': text_list[0], 'during_time': None, 'area': None, 'position': None}
+                for cell in text_list:
+                    if re.search(r'\([\d\s]+-.*?\)', cell):
+                        job_information['during_time'] = cell.strip()[1: -1].replace(' ', '')
+                    if '地区：' in cell:
+                        job_information['area'] = cell.replace('地区：', '').replace('，', '').strip()
+                    if '职位：' in cell:
+                        job_information['position'] = cell.replace('职位：', '').strip()
+                item['jobInformation'].append(job_information)
+
+        item['educationInformation'] = []
+        education_group = html2.xpath('//div[@class="obj_name"]/h2[text()="教育信息"]/parent::div/parent::div/following-sibling::div[1]/div/ul/li')
+        for education in education_group:
+            school_type = education.xpath('./span[1]/text()')[0].strip()[0: -1]
+            school_list = [i.strip() for i in education.xpath('./span[2]/a/text()') if i.strip()]
+            time_list = [i.strip()[1: -1] for i in education.xpath('./span[2]/text()') if i.strip() and re.search(r'\(\d+年\)', i.strip())]
+            if school_list and time_list:
+                for school_name, year in zip(school_list, time_list):
+                    education_information = {'school_type': school_type, 'school_name': school_name, 'year': year}
+                    item['educationInformation'].append(education_information)
+
+        item['tabs'] = html2.xpath('//ul/li/span[text()="标签："]/following-sibling::*[1]/a/text()')
+        item['tabs'] = [i.strip() for i in item['tabs'] if i.strip()]
+
+        html3_text = re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?})\)</script>', response.text).group(1)
+        html3_text = json.loads(html3_text)['html']
+        html3 = etree.HTML(html3_text)
+        item['following'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[1]/a/strong/text()')[0]
+        item['followers'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[2]/a/strong/text()')[0]
+        item['mblogNum'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[3]/a/strong/text()')[0]
+        yield item
