@@ -17,7 +17,7 @@ class WeiboSpider(spiders.RedisSpider):
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
-        yield scrapy.Request(url=url, headers=headers, callback=self.mblog_parse)
+        yield scrapy.Request(url=url, headers=headers, dont_filter=True, callback=self.mblog_parse)
 
     def mblog_parse(self, response):
         data = json.loads(response.text)['data']
@@ -43,10 +43,14 @@ class WeiboSpider(spiders.RedisSpider):
             item['forward_count'] = element.xpath('.//a[@action-type="fl_forward"]//em[2]/text()')[0]
             item['comment_count'] = element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]
             item['like_count'] = element.xpath('.//a[@action-type="fl_like"]//em[2]/text()')[0]
-            yield item
+            if element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_content"]/a[@class="WB_text_opt" and contains(text(), "展开全文")]'):
+                yield from self.longtext_request(item)
+            else:
+                yield item
             href = 'https://weibo.com/{}/info'.format(item['uid'])
             yield from self.user_request(href)
             yield from self.comment_paging(mid, 1)
+        yield from self.start_requests()
 
     def comment_paging(self, mid, page, previous_page_sign=None):
         url = 'https://weibo.com/aj/v6/comment/big'
@@ -59,7 +63,7 @@ class WeiboSpider(spiders.RedisSpider):
             'ajwvr': '6',
             'id': mid,
             'from': 'singleWeiBo',
-            '__rnd': str(int(time.time() * 1000))
+            '__rnd': '1573536761190'
         }
         yield scrapy.FormRequest(url=url, method='get', headers=headers, formdata=params, meta={'mid': mid, 'page': page, 'previous_page_sign': previous_page_sign}, callback=self.comment_parse)
 
@@ -164,4 +168,21 @@ class WeiboSpider(spiders.RedisSpider):
         item['following'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[1]//strong/text()')[0]
         item['followers'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[2]//strong/text()')[0]
         item['mblogNum'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[3]//strong/text()')[0]
+        yield item
+
+    def longtext_request(self, item):
+        url = 'https://d.weibo.com/p/aj/mblog/getlongtext?ajwvr=6&mid={}&is_settop&is_sethot&is_setfanstop&is_setyoudao&__rnd=1573536761190'.format(item['mid'])
+        headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        yield scrapy.Request(url=url, headers=headers, meta={'item': item}, callback=self.longtext_parse)
+
+    def longtext_parse(self, response):
+        item = response.meta['item']
+
+        data = json.loads(response.text)['data']['html']
+        data = '<body>' + data + '</body>'
+        html = etree.HTML(data)
+        item['content'] = html.xpath('body/text() | body/a[@class="a_topic"]/text() | body/img/@title')
         yield item
