@@ -22,6 +22,7 @@ class DataCheckPipeline(object):
             item['like_count'] = int(item['like_count']) if item['like_count'] != '赞' else 0
         if isinstance(item, CommentItem):
             item['content'] = ''.join([i.strip() for i in item['content'] if i.strip()]).lstrip('：').strip()
+            item['picture'] = item['picture'] if item['picture'] else None
             item['like_count'] = int(item['like_count']) if item['like_count'] != '赞' else 0
             if '秒前' in item['time']:
                 item['time'] = (datetime.now() - timedelta(seconds=int(item['time'].replace('秒前', '')))).strftime('%Y-%m-%d %H:%M')
@@ -37,23 +38,23 @@ class DataCheckPipeline(object):
             item['headPortrait'] = item['headPortrait'] if item['headPortrait'] != '//ww1.sinaimg.cn/default/images/default_avatar_male_uploading_180.gif' else None
             item['membershipGrade'] = int(re.search(r'icon_member(\d)', item['membershipGrade'][0]).group(1)) if item['membershipGrade'] and re.search(r'icon_member(\d)', item['membershipGrade'][0]) else None
             item['identity'] = item['identity'][0].strip() if item['identity'] else None
-            item['realName'] = item['realName'][0].strip() if item['realName'] else None
-            item['area'] = item['area'][0].strip() if item['area'] else None
-            item['sex'] = item['sex'][0].strip() if item['sex'] else None
-            item['sexualOrientation'] = item['sexualOrientation'][0].strip() if item['sexualOrientation'] else None
-            item['relationshipStatus'] = item['relationshipStatus'][0].strip() if item['relationshipStatus'] else None
-            item['birthday'] = item['birthday'][0].strip() if item['birthday'] else None
-            item['bloodType'] = item['bloodType'][0].strip() if item['bloodType'] else None
-            item['blog'] = item['blog'][0].strip() if item['blog'] else None
-            item['intro'] = item['intro'][0].strip() if item['intro'] else None
-            item['registrationDate'] = item['registrationDate'][0].strip() if item['registrationDate'] else None
-            item['domainHacks'] = item['domainHacks'] if item['domainHacks'] else None
-            item['email'] = item['email'][0].strip() if item['email'] else None
-            item['qq'] = item['qq'][0].strip() if item['qq'] else None
-            item['msn'] = item['msn'][0].strip() if item['msn'] else None
-            item['jobInformation'] = item['jobInformation'] if item['jobInformation'] else None
-            item['educationInformation'] = item['educationInformation'] if item['educationInformation'] else None
-            item['tabs'] = item['tabs'] if item['tabs'] else None
+            item['realName'] = item['realName'][0].strip() if item.get('realName') else None
+            item['area'] = item['area'][0].strip() if item.get('area') else None
+            item['sex'] = item['sex'][0].strip() if item.get('sex') else None
+            item['sexualOrientation'] = item['sexualOrientation'][0].strip() if item.get('sexualOrientation') else None
+            item['relationshipStatus'] = item['relationshipStatus'][0].strip() if item.get('relationshipStatus') else None
+            item['birthday'] = item['birthday'][0].strip() if item.get('birthday') else None
+            item['bloodType'] = item['bloodType'][0].strip() if item.get('bloodType') else None
+            item['blog'] = item['blog'][0].strip() if item.get('blog') else None
+            item['intro'] = item['intro'][0].strip() if item.get('intro') else None
+            item['registrationDate'] = item['registrationDate'][0].strip() if item.get('registrationDate') else None
+            item['domainHacks'] = item['domainHacks'] if item.get('domainHacks') else None
+            item['email'] = item['email'][0].strip() if item.get('email') else None
+            item['qq'] = item['qq'][0].strip() if item.get('qq') else None
+            item['msn'] = item['msn'][0].strip() if item.get('msn') else None
+            item['jobInformation'] = item['jobInformation'] if item.get('jobInformation') else None
+            item['educationInformation'] = item['educationInformation'] if item.get('educationInformation') else None
+            item['tabs'] = item['tabs'] if item.get('tabs') else None
             item['following'] = int(item['following'])
             item['followers'] = int(item['followers'])
             item['mblogNum'] = int(item['mblogNum'])

@@ -8,6 +8,19 @@
 from scrapy import signals
 
 
+class NotFoundHandleMiddleware(object):
+    def process_response(self, request, response, spider):
+        if request.callback.__name__ == 'user_parse':
+            if response.status == 302 and response.headers['Location'] == b'https://weibo.com/sorry?pagenotfound&':
+                return request.replace(url=request.url[0: -5])
+        return response
+
+
+class CookieMiddleware(object):
+    def process_request(self, request, spider):
+        request.headers['Cookie'] = 'SINAGLOBAL=5134369581550.486.1573439433047; wvr=6; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9WWsl29zKPAhzBnv9ckgGmDo5JpX5KMhUgL.FoqReoBReoqRS022dJLoIp7LxKML1KBLBKnLxKqL1hnLBoMc1hzX1hzc1hMp; ALF=1605056223; SSOLoginState=1573520223; SCF=AsT-rSz3zU4N2ePfqPusiWIQhJFv6Tx05dm4q7qJt9NZhoUHe6FvNauPLGNL29sogIEwncAm3BXknrH92rkNSKw.; SUB=_2A25wznMPDeRhGeBG6VYZ8ijEzD2IHXVTuuPHrDV8PUNbmtAKLXeskW9NRgnh7jjR9jV6Po9qK3_awNeqUa6LoF2Y; SUHB=05i6JyXcw9kShn; YF-V5-G0=99df5c1ecdf13307fb538c7e59e9bc9d; Ugrow-G0=d52660735d1ea4ed313e0beb68c05fc5; _s_tentry=weibo.com; Apache=5432629739683.588.1573520238601; ULV=1573520238649:2:2:2:5432629739683.588.1573520238601:1573439433055; wb_view_log_6824826871=1440*9001; YF-Page-G0=aac25801fada32565f5c5e59c7bd227b|1573525857|1573525714; webim_unReadCount=%7B%22time%22%3A1573526030325%2C%22dm_pub_total%22%3A0%2C%22chat_group_client%22%3A0%2C%22allcountNum%22%3A3%2C%22msgbox%22%3A0%7D'
+
+
 class ProjectSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
     # scrapy acts as if the spider middleware does not modify the

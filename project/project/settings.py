@@ -21,9 +21,6 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
-DOWNLOAD_TIMEOUT = 5
-RETRY_TIMES = 5
-
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
@@ -57,9 +54,10 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'project.middlewares.ProjectDownloaderMiddleware': 543,
-#}
+DOWNLOADER_MIDDLEWARES = {
+    'project.middlewares.CookieMiddleware': 200,
+    'project.middlewares.NotFoundHandleMiddleware': 1000,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -100,3 +98,6 @@ REDIS_PARAMS = {
     'password': 'test123',
     'db': 10
 }
+
+DOWNLOAD_TIMEOUT = 10
+RETRY_TIMES = 5
