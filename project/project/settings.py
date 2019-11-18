@@ -22,7 +22,7 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 4
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -55,7 +55,8 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'project.middlewares.CookieMiddleware': 200,
+    'project.middlewares.CookieMiddleware': 110,
+    'project.middlewares.ProxyMiddleware': 120,
     'project.middlewares.NotFoundHandleMiddleware': 1000,
 }
 
@@ -92,6 +93,10 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
+DNSCACHE_ENABLED = True
+DNSCACHE_SIZE = 1000
+DNS_TIMEOUT = 60
+
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 REDIS_PARAMS = {
@@ -102,4 +107,35 @@ REDIS_PARAMS = {
 DOWNLOAD_TIMEOUT = 10
 
 RETRY_TIMES = 5
-RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 414]
+# RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 414]
+
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.PriorityQueue'
+
+# DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+DUPEFILTER_CLASS = "project.bloomfilter.CustomRFPDupeFilter"
+DUPEFILTER_DEBUG = True
+
+DEPTH_PRIORITY = -1    # 深度优先
+
+SCHEDULER_PERSIST = True    # 是否在关闭时保留原来的调度器和去重记录
+SCHEDULER_FLUSH_ON_START = True    # 是否在开始之前清空调度器和去重记录
+
+BLOOMFILTER_BIT = 30
+BLOOMFILTER_HASH_NUMBER = 6
+
+MYSQL_HOST = 'localhost'
+MYSQL_PORT = 3306
+MYSQL_USER = 'test'
+MYSQL_PASSWORD = 'test123'
+MYSQL_DB = 'test'
+
+MYSQL_KEY = "mysql+pymysql://{user}:{password}@{host}:{port}/{db}?charset=utf8".format(
+    user=MYSQL_USER, password=MYSQL_PASSWORD, host=MYSQL_HOST, port=MYSQL_PORT, db=MYSQL_DB)
+
+MYSQL_POOL_SIZE = 5
+MYSQL_POOL_RECYCLE = 7200    # 连接池中的空闲连接超过1小时自动释放。
+MYSQL_POOL_TIMEOUT = 30
+
+REDIRECT_ENABLED = False
+HTTPERROR_ALLOWED_CODES = [302]

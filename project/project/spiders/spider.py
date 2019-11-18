@@ -6,10 +6,15 @@ from lxml import etree
 from urllib.parse import quote, unquote
 from scrapy_redis import spiders
 from ..items import *
+from ..cookie_pool import CookiePool
 
 
 class WeiboSpider(spiders.RedisSpider):
     name = 'weibo'
+
+    def __init__(self, *args, **kwargs):
+        super(WeiboSpider, self).__init__(*args, **kwargs)
+        self.cookie_pool = CookiePool()
 
     def start_requests(self):
         url = 'https://d.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=102803_ctg1_1760_-_ctg1_1760&pagebar=-1&tab=home&current_page=0&pre_page=1&page=1&pl_name=Pl_Core_NewMixFeed__3&id=102803_ctg1_1760_-_ctg1_1760&script_uri=/&feed_type=1&domain_op=102803_ctg1_1760_-_ctg1_1760&__rnd={}'.format(int(time.time()*1000))

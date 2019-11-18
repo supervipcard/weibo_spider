@@ -1,0 +1,5 @@
+BROKER_URL = 'redis://:test123@localhost:6379/11'
+# CELERY_RESULT_BACKEND = 'redis://:test123@localhost:6379/12'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERYD_CONCURRENCY = 1
