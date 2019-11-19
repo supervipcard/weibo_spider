@@ -114,3 +114,35 @@ class AccountLogin:
         }
         response = self.req.get(url=url, params=params)
         return json.loads(response.text.strip()[1: -2])
+
+    def check1(self):
+        url = 'https://d.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=102803_ctg1_1760_-_ctg1_1760&pagebar=-1&tab=home&current_page=0&pre_page=1&page=1&pl_name=Pl_Core_NewMixFeed__3&id=102803_ctg1_1760_-_ctg1_1760&script_uri=/&feed_type=1&domain_op=102803_ctg1_1760_-_ctg1_1760&__rnd={}'.format(int(time.time()*1000))
+        headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        response = self.req.get(url=url, headers=headers)
+        return json.loads(response.text)
+
+    def check2(self):
+        url = 'https://weibo.com/aj/v6/comment/big?page=5&ajwvr=6&id=4437918364348587&from=singleWeiBo&__rnd={}'.format(int(time.time()*1000))
+        headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        response = self.req.get(url=url, headers=headers)
+        return json.loads(response.text)
+
+    def check3(self):
+        url = 'https://weibo.com/2461435523'
+        response = self.req.get(url=url)
+        return response.text
+
+    def check4(self):
+        url = 'https://d.weibo.com/p/aj/mblog/getlongtext?ajwvr=6&mid=4439915435486090&is_settop&is_sethot&is_setfanstop&is_setyoudao&__rnd={}'.format(int(time.time()*1000))
+        headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        response = self.req.get(url=url, headers=headers)
+        return json.loads(response.text)

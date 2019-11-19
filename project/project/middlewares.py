@@ -6,6 +6,7 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 import time
+import json
 from scrapy import signals
 from celery_tasks.tasks import task
 
@@ -13,7 +14,7 @@ from celery_tasks.tasks import task
 class NotFoundHandleMiddleware(object):
     def process_response(self, request, response, spider):
         if request.callback.__name__ == 'user_parse':
-            if response.status == 302 and response.headers['Location'] == b'https://weibo.com/sorry?pagenotfound&':
+            if response.headers.get('Location') and response.headers['Location'] == b'https://weibo.com/sorry?pagenotfound&':
                 return request.replace(url=request.url[0: -5])
         return response
 
@@ -45,6 +46,29 @@ class CookieMiddleware(object):
 class ProxyMiddleware(object):
     def process_request(self, request, spider):
         request.meta['proxy'] = 'https://xiangchen:pl1996317@101.132.71.2:3129'
+
+
+class AccountExceptionMiddleware(object):
+    def process_response(self, request, response, spider):
+        if request.callback.__name__ == 'mblog_parse':
+            if '暂时没有内容哦，稍后再来试试吧' in json.loads(response.text)['data']:
+                print('账号异常：{}'.format(request.meta.get('username')))
+                spider.cookie_pool.update_code(request.meta.get('username'), -3)
+                request.dont_filter = True
+                return request
+        if request.callback.__name__ == 'comment_parse':
+            if json.loads(response.text)['data'] in ['https://weibo.com/sorry?userblock&code=20003', 'https://weibo.com/unfreeze']:
+                print('账号异常：{}'.format(request.meta.get('username')))
+                spider.cookie_pool.update_code(request.meta.get('username'), -3)
+                request.dont_filter = True
+                return request
+        if request.callback.__name__ == 'longtext_parse':
+            if json.loads(response.text)['data'] == '':
+                print('账号异常：{}'.format(request.meta.get('username')))
+                spider.cookie_pool.update_code(request.meta.get('username'), -3)
+                request.dont_filter = True
+                return request
+        return response
 
 
 class ProjectSpiderMiddleware(object):

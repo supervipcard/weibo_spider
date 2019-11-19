@@ -55,8 +55,9 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'project.middlewares.CookieMiddleware': 110,
+    'project.middlewares.AccountExceptionMiddleware': 110,
     'project.middlewares.ProxyMiddleware': 120,
+    'project.middlewares.CookieMiddleware': 650,
     'project.middlewares.NotFoundHandleMiddleware': 1000,
 }
 
@@ -137,5 +138,5 @@ MYSQL_POOL_SIZE = 5
 MYSQL_POOL_RECYCLE = 7200    # 连接池中的空闲连接超过1小时自动释放。
 MYSQL_POOL_TIMEOUT = 30
 
-REDIRECT_ENABLED = False
-HTTPERROR_ALLOWED_CODES = [302]
+# REDIRECT_ENABLED = False
+# HTTPERROR_ALLOWED_CODES = [302]

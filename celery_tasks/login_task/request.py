@@ -14,7 +14,7 @@ class Request:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers = self.base_headers
-        # self.session.proxies = self.get_proxies()
+        self.session.proxies = self.get_proxies()
 
     @staticmethod
     def get_proxies():
@@ -25,8 +25,8 @@ class Request:
             "pass": '',
         }
         proxies = {
-            "http": proxyMeta,
-            "https": proxyMeta,
+            "http": 'http://xiangchen:pl1996317@101.132.71.2:3129',
+            "https": 'http://xiangchen:pl1996317@101.132.71.2:3129',
         }
         return proxies
 
