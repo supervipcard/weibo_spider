@@ -39,7 +39,7 @@ class WeiboSpider(spiders.RedisSpider):
             item['source'] = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]//a[@action-type="app_source"]/text()')
 
             content = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_content"]')[0]
-            item['content'] = content.xpath('./text() | ./a[@class="a_topic"]/text() | ./img/@title')
+            item['content'] = content.xpath('./text() | ./a[@class="a_topic"]/text() | ./a[@extra-data="type=atname"]/text() | ./img/@title')
             picture = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_media_prev"]//li[contains(@class, "WB_pic")]//img/@src')
             item['picture'] = ['https:' + re.sub(r'thumb150|orj360', 'mw1024', i) for i in picture]
             video = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_media_prev"]//li[contains(@class, "WB_video")]/@action-data')
@@ -55,7 +55,7 @@ class WeiboSpider(spiders.RedisSpider):
             href = 'https://weibo.com/{}/info'.format(item['uid'])
             yield from self.user_request(href)
             yield from self.comment_paging(mid, 1)
-        yield from self.start_requests()
+        # yield from self.start_requests()
 
     def comment_paging(self, mid, page, previous_page_sign=None):
         url = 'https://weibo.com/aj/v6/comment/big'
@@ -74,7 +74,7 @@ class WeiboSpider(spiders.RedisSpider):
 
     def comment_parse(self, response):
         mid = response.meta['mid']
-        page = response.meta['page']
+        page = response.meta['page'] + 1
         previous_page_sign = response.meta['previous_page_sign']
 
         data = json.loads(response.text)['data']['html']
@@ -83,25 +83,27 @@ class WeiboSpider(spiders.RedisSpider):
 
         if elements:
             current_page_sign = elements[0].attrib['comment_id']
-            if current_page_sign != previous_page_sign:
-                for element in elements:
-                    item = CommentItem()
-                    item['comment_id'] = element.attrib['comment_id']
-                    item['mid'] = mid
-                    uid = element.xpath('./div[@node-type="replywrap"]/div[@class="WB_text"]/a[1]/@usercard')[0]
-                    item['uid'] = re.search(r'(\d+)', uid).group(1)
+            if current_page_sign == previous_page_sign:
+                return
+            for element in elements:
+                item = CommentItem()
+                item['comment_id'] = element.attrib['comment_id']
+                item['mid'] = mid
+                uid = element.xpath('./div[@node-type="replywrap"]/div[@class="WB_text"]/a[1]/@usercard')[0]
+                item['uid'] = re.search(r'(\d+)', uid).group(1)
 
-                    content = element.xpath('./div[@node-type="replywrap"]/div[@class="WB_text"]')[0]
-                    item['content'] = content.xpath('./text() | ./img/@title')
-                    picture = element.xpath('./div[@node-type="replywrap"]/div[@node-type="comment_media_prev"]//li[contains(@class, "WB_pic")]//img/@src')
-                    item['picture'] = ['https:' + i for i in picture]
+                content = element.xpath('./div[@node-type="replywrap"]/div[@class="WB_text"]')[0]
+                item['content'] = content.xpath('./text() | ./a[@extra-data="type=atname"]/text() | ./img/@title')
+                picture = element.xpath('./div[@node-type="replywrap"]/div[@node-type="comment_media_prev"]//li[contains(@class, "WB_pic")]//img/@src')
+                item['picture'] = ['https:' + i for i in picture]
 
-                    item['time'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[2]/text()')[0]
-                    item['like_count'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[1]//a[@action-type="fl_like"]//em[2]/text()')[0]
-                    yield item
-                    href = 'https:' + element.xpath('./div[@node-type="replywrap"]/div[@class="WB_text"]/a[1]/@href')[0] + '/info'
-                    yield from self.user_request(href)
-                yield from self.comment_paging(mid, page+1, current_page_sign)
+                item['time'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[2]/text()')[0]
+                item['like_count'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[1]//a[@action-type="fl_like"]//em[2]/text()')[0]
+                yield item
+                href = 'https:' + element.xpath('./div[@node-type="replywrap"]/div[@class="WB_text"]/a[1]/@href')[0] + '/info'
+                yield from self.user_request(href)
+            if html.xpath('//*[@node-type="comment_loading" or @action-type="click_more_comment"]/@action-data'):
+                yield from self.comment_paging(mid, page, current_page_sign)
 
     def user_request(self, url):
         yield scrapy.Request(url=url, meta={'url': url}, callback=self.user_parse)
@@ -167,7 +169,7 @@ class WeiboSpider(spiders.RedisSpider):
             item['tabs'] = html2.xpath('//ul/li/span[text()="标签："]/following-sibling::*[1]/a/text()')
             item['tabs'] = [i.strip() for i in item['tabs'] if i.strip()]
 
-        html3_text = re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?})\)</script>', response.text).group(1)
+        html3_text = re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?,"html":.*?})\)</script>', response.text).group(1)
         html3_text = json.loads(html3_text)['html']
         html3 = etree.HTML(html3_text)
         item['following'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[1]//strong/text()')[0]

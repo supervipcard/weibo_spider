@@ -55,10 +55,11 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'project.middlewares.AccountExceptionMiddleware': 110,
-    'project.middlewares.ProxyMiddleware': 120,
+    'project.middlewares.ProxyMiddleware': 110,
+    'project.middlewares.ResponseExceptionMiddleware': 120,
+    'project.middlewares.AccountExceptionMiddleware': 130,
     'project.middlewares.CookieMiddleware': 650,
-    'project.middlewares.NotFoundHandleMiddleware': 1000,
+    'project.middlewares.NotFoundHandleMiddleware': 660,
 }
 
 # Enable or disable extensions
@@ -71,6 +72,7 @@ DOWNLOADER_MIDDLEWARES = {
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'project.pipelines.DataCheckPipeline': 300,
+    'project.pipelines.SqlPipeline': 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -129,10 +131,11 @@ MYSQL_HOST = 'localhost'
 MYSQL_PORT = 3306
 MYSQL_USER = 'test'
 MYSQL_PASSWORD = 'test123'
-MYSQL_DB = 'test'
+MYSQL_DB = 'weibo_spider'
+MYSQL_CHARSET = 'utf8mb4'
 
-MYSQL_KEY = "mysql+pymysql://{user}:{password}@{host}:{port}/{db}?charset=utf8".format(
-    user=MYSQL_USER, password=MYSQL_PASSWORD, host=MYSQL_HOST, port=MYSQL_PORT, db=MYSQL_DB)
+MYSQL_KEY = "mysql+pymysql://{user}:{password}@{host}:{port}/{db}?charset={charset}".format(
+    user=MYSQL_USER, password=MYSQL_PASSWORD, host=MYSQL_HOST, port=MYSQL_PORT, db=MYSQL_DB, charset=MYSQL_CHARSET)
 
 MYSQL_POOL_SIZE = 5
 MYSQL_POOL_RECYCLE = 7200    # 连接池中的空闲连接超过1小时自动释放。

@@ -5,6 +5,7 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import re
 import time
 import json
 from scrapy import signals
@@ -16,6 +17,15 @@ class NotFoundHandleMiddleware(object):
         if request.callback.__name__ == 'user_parse':
             if response.headers.get('Location') and response.headers['Location'] == b'https://weibo.com/sorry?pagenotfound&':
                 return request.replace(url=request.url[0: -5])
+        return response
+
+
+class ResponseExceptionMiddleware(object):
+    def process_response(self, request, response, spider):
+        if request.callback.__name__ == 'user_parse':
+            if not re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?,"html":.*?})\)</script>', response.text):
+                request.dont_filter = True
+                return request
         return response
 
 

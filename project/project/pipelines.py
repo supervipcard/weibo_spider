@@ -6,7 +6,10 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 import re
+import json
 from datetime import datetime, timedelta
+import pymysql
+from twisted.enterprise import adbapi
 from .items import *
 
 
@@ -61,3 +64,48 @@ class DataCheckPipeline(object):
             if item['identity'] == item['intro']:
                 item['identity'] = None
         return item
+
+
+class SqlPipeline(object):
+    def __init__(self, pool):
+        self.db_conn = pool
+        self.mblog_sql = 'insert ignore into mblog values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        self.comment_sql = 'insert ignore into comment values (%s, %s, %s, %s, %s, %s, %s)'
+        self.user_sql = 'insert ignore into user values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+
+    @classmethod
+    def from_settings(cls, settings):
+        pool = adbapi.ConnectionPool('pymysql', host=settings['MYSQL_HOST'], port=settings['MYSQL_PORT'], user=settings['MYSQL_USER'], passwd=settings['MYSQL_PASSWORD'], db=settings['MYSQL_DB'], charset=settings['MYSQL_CHARSET'])
+        return cls(pool)
+
+    def process_item(self, item, spider):
+        query = self.db_conn.runInteraction(self.go_insert, item)   # 数据插入
+        query.addErrback(self.handle_error, item, spider)   # 异常检测
+        return item
+
+    def go_insert(self, cursor, item):
+        if isinstance(item, MBlogItem):
+            item['picture'] = json.dumps(item['picture'], ensure_ascii=False)
+            item['video'] = json.dumps(item['video'], ensure_ascii=False)
+            cursor.execute(self.mblog_sql, [item['mid'], item['uid'], item['url'], item['time'], item['source'],
+                                            item['content'], item['picture'], item['video'], item['forward_count'],
+                                            item['comment_count'], item['like_count']])
+        if isinstance(item, CommentItem):
+            item['picture'] = json.dumps(item['picture'], ensure_ascii=False)
+            cursor.execute(self.comment_sql, [item['comment_id'], item['mid'], item['uid'], item['content'],
+                                              item['picture'], item['time'], item['like_count']])
+        if isinstance(item, UserItem):
+            item['domainHacks'] = json.dumps(item['domainHacks'], ensure_ascii=False)
+            item['jobInformation'] = json.dumps(item['jobInformation'], ensure_ascii=False)
+            item['educationInformation'] = json.dumps(item['educationInformation'], ensure_ascii=False)
+            item['tabs'] = json.dumps(item['tabs'], ensure_ascii=False)
+            cursor.execute(self.user_sql, [item['uid'], item['nickname'], item['headPortrait'], item['membershipGrade'],
+                                           item['identity'], item['realName'], item['area'], item['sex'],
+                                           item['sexualOrientation'], item['relationshipStatus'], item['birthday'],
+                                           item['bloodType'], item['blog'], item['intro'],item['registrationDate'],
+                                           item['domainHacks'], item['email'], item['qq'],item['msn'],
+                                           item['jobInformation'], item['educationInformation'], item['tabs'],
+                                           item['following'], item['followers'], item['mblogNum'],item['url']])
+
+    def handle_error(self, failure, item, spider):
+        spider.logger.error(failure)
