@@ -44,7 +44,7 @@ class CookieMiddleware(object):
                 time.sleep(5)
 
     def process_response(self, request, response, spider):
-        if response.headers.get('Location') and b'passport.weibo.com/visitor/visitor' in response.headers['Location']:
+        if response.headers.get('Location') and (b'passport.weibo.com/visitor/visitor' in response.headers['Location'] or b'login.sina.com.cn/sso/login.php' in response.headers['Location']):
             print('登录状态无效：{}'.format(request.meta.get('username')))
             spider.cookie_pool.update_code(request.meta.get('username'), -1)
             task.delay(request.meta.get('username'), request.meta.get('password'))

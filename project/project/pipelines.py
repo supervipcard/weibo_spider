@@ -17,15 +17,15 @@ class DataCheckPipeline(object):
     def process_item(self, item, spider):
         if isinstance(item, MBlogItem):
             item['source'] = item['source'][0] if item['source'] else None
-            item['content'] = ''.join([i.strip().replace('\u200b', '') for i in item['content'] if i.strip()]).strip()
-            item['picture'] = item['picture'] if item['picture'] else None
-            item['video'] = item['video'] if item['video'] else None
+            item['content'] = ' '.join([i.strip().replace('\u200b', '') for i in item['content'] if i.strip()]).strip()
+            item['picture'] = json.dumps(item['picture'], ensure_ascii=False) if item['picture'] else None
+            item['video'] = json.dumps(item['video'], ensure_ascii=False) if item['video'] else None
             item['forward_count'] = int(item['forward_count']) if item['forward_count'] != '转发' else 0
             item['comment_count'] = int(item['comment_count']) if item['comment_count'] != '评论' else 0
             item['like_count'] = int(item['like_count']) if item['like_count'] != '赞' else 0
         if isinstance(item, CommentItem):
-            item['content'] = ''.join([i.strip() for i in item['content'] if i.strip()]).lstrip('：').strip()
-            item['picture'] = item['picture'] if item['picture'] else None
+            item['content'] = ' '.join([i.strip() for i in item['content'] if i.strip()]).lstrip('：').strip()
+            item['picture'] = json.dumps(item['picture'], ensure_ascii=False) if item['picture'] else None
             item['like_count'] = int(item['like_count']) if item['like_count'] != '赞' else 0
             if '秒前' in item['time']:
                 item['time'] = (datetime.now() - timedelta(seconds=int(item['time'].replace('秒前', '')))).strftime('%Y-%m-%d %H:%M')
@@ -51,13 +51,13 @@ class DataCheckPipeline(object):
             item['blog'] = item['blog'][0].strip() if item.get('blog') else None
             item['intro'] = item['intro'][0].strip() if item.get('intro') else None
             item['registrationDate'] = item['registrationDate'][0].strip() if item.get('registrationDate') else None
-            item['domainHacks'] = item['domainHacks'] if item.get('domainHacks') else None
+            item['domainHacks'] = json.dumps(item['domainHacks'], ensure_ascii=False) if item.get('domainHacks') else None
             item['email'] = item['email'][0].strip() if item.get('email') else None
             item['qq'] = item['qq'][0].strip() if item.get('qq') else None
             item['msn'] = item['msn'][0].strip() if item.get('msn') else None
-            item['jobInformation'] = item['jobInformation'] if item.get('jobInformation') else None
-            item['educationInformation'] = item['educationInformation'] if item.get('educationInformation') else None
-            item['tabs'] = item['tabs'] if item.get('tabs') else None
+            item['jobInformation'] = json.dumps(item['jobInformation'], ensure_ascii=False) if item.get('jobInformation') else None
+            item['educationInformation'] = json.dumps(item['educationInformation'], ensure_ascii=False) if item.get('educationInformation') else None
+            item['tabs'] = json.dumps(item['tabs'], ensure_ascii=False) if item.get('tabs') else None
             item['following'] = int(item['following'])
             item['followers'] = int(item['followers'])
             item['mblogNum'] = int(item['mblogNum'])
@@ -69,9 +69,9 @@ class DataCheckPipeline(object):
 class SqlPipeline(object):
     def __init__(self, pool):
         self.db_conn = pool
-        self.mblog_sql = 'insert ignore into mblog values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
-        self.comment_sql = 'insert ignore into comment values (%s, %s, %s, %s, %s, %s, %s)'
-        self.user_sql = 'insert ignore into user values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        self.mblog_sql = 'insert ignore into mblog values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        self.comment_sql = 'insert ignore into comment values (%s, %s, %s, %s, %s, %s, %s, %s)'
+        self.user_sql = 'insert ignore into user values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
 
     @classmethod
     def from_settings(cls, settings):
@@ -85,27 +85,20 @@ class SqlPipeline(object):
 
     def go_insert(self, cursor, item):
         if isinstance(item, MBlogItem):
-            item['picture'] = json.dumps(item['picture'], ensure_ascii=False)
-            item['video'] = json.dumps(item['video'], ensure_ascii=False)
             cursor.execute(self.mblog_sql, [item['mid'], item['uid'], item['url'], item['time'], item['source'],
                                             item['content'], item['picture'], item['video'], item['forward_count'],
-                                            item['comment_count'], item['like_count']])
+                                            item['comment_count'], item['like_count'], datetime.now()])
         if isinstance(item, CommentItem):
-            item['picture'] = json.dumps(item['picture'], ensure_ascii=False)
             cursor.execute(self.comment_sql, [item['comment_id'], item['mid'], item['uid'], item['content'],
-                                              item['picture'], item['time'], item['like_count']])
+                                              item['picture'], item['time'], item['like_count'], datetime.now()])
         if isinstance(item, UserItem):
-            item['domainHacks'] = json.dumps(item['domainHacks'], ensure_ascii=False)
-            item['jobInformation'] = json.dumps(item['jobInformation'], ensure_ascii=False)
-            item['educationInformation'] = json.dumps(item['educationInformation'], ensure_ascii=False)
-            item['tabs'] = json.dumps(item['tabs'], ensure_ascii=False)
             cursor.execute(self.user_sql, [item['uid'], item['nickname'], item['headPortrait'], item['membershipGrade'],
                                            item['identity'], item['realName'], item['area'], item['sex'],
                                            item['sexualOrientation'], item['relationshipStatus'], item['birthday'],
                                            item['bloodType'], item['blog'], item['intro'],item['registrationDate'],
                                            item['domainHacks'], item['email'], item['qq'],item['msn'],
                                            item['jobInformation'], item['educationInformation'], item['tabs'],
-                                           item['following'], item['followers'], item['mblogNum'],item['url']])
+                                           item['following'], item['followers'], item['mblogNum'], item['url'], datetime.now()])
 
     def handle_error(self, failure, item, spider):
         spider.logger.error(failure)
