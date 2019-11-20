@@ -17,12 +17,13 @@ class WeiboSpider(spiders.RedisSpider):
         self.cookie_pool = CookiePool()
 
     def start_requests(self):
-        url = 'https://d.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=102803_ctg1_1760_-_ctg1_1760&pagebar=-1&tab=home&current_page=0&pre_page=1&page=1&pl_name=Pl_Core_NewMixFeed__3&id=102803_ctg1_1760_-_ctg1_1760&script_uri=/&feed_type=1&domain_op=102803_ctg1_1760_-_ctg1_1760&__rnd={}'.format(int(time.time()*1000))
-        headers = {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-        yield scrapy.Request(url=url, headers=headers, dont_filter=True, callback=self.mblog_parse)
+        while True:
+            url = 'https://d.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=102803_ctg1_1760_-_ctg1_1760&pagebar=-1&tab=home&current_page=0&pre_page=1&page=1&pl_name=Pl_Core_NewMixFeed__3&id=102803_ctg1_1760_-_ctg1_1760&script_uri=/&feed_type=1&domain_op=102803_ctg1_1760_-_ctg1_1760&__rnd={}'.format(int(time.time()*1000))
+            headers = {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+            yield scrapy.Request(url=url, headers=headers, dont_filter=True, callback=self.mblog_parse)
 
     def mblog_parse(self, response):
         data = json.loads(response.text)['data']
@@ -55,7 +56,6 @@ class WeiboSpider(spiders.RedisSpider):
             href = 'https://weibo.com/{}/info'.format(item['uid'])
             yield from self.user_request(href)
             yield from self.comment_request(mid)
-        yield from self.start_requests()
 
     def comment_request(self, mid):
         """只取第一页评论"""

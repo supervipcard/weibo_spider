@@ -27,13 +27,14 @@ class DataCheckPipeline(object):
             item['content'] = ' '.join([i.strip() for i in item['content'] if i.strip()]).lstrip('：').strip()
             item['picture'] = json.dumps(item['picture'], ensure_ascii=False) if item['picture'] else None
             item['like_count'] = int(item['like_count']) if item['like_count'] != '赞' else 0
+            item['time'] = re.sub(r'第\d+楼', '', item['time']).strip()
             if '秒前' in item['time']:
                 item['time'] = (datetime.now() - timedelta(seconds=int(item['time'].replace('秒前', '')))).strftime('%Y-%m-%d %H:%M')
             elif '分钟前' in item['time']:
                 item['time'] = (datetime.now() - timedelta(minutes=int(item['time'].replace('分钟前', '')))).strftime('%Y-%m-%d %H:%M')
             elif '今天' in item['time']:
                 item['time'] = item['time'].replace('今天', datetime.now().strftime('%Y-%m-%d'))
-            elif '月' in item['time'] and '日' in item['time']:
+            elif '月' in item['time'] and '日' in item['time'] and '年' not in item['time']:
                 item['time'] = str(datetime.now().year) + '-' + item['time'].replace('月', '-').replace('日', '')
             else:
                 raise Exception('评论时间无法解析')
