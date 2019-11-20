@@ -87,7 +87,7 @@ class WeiboSpider(spiders.RedisSpider):
             item['time'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[2]/text()')[0]
             item['like_count'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[1]//a[@action-type="fl_like"]//em[2]/text()')[0]
             yield item
-            href = 'https:' + element.xpath('./div[@node-type="replywrap"]/div[@class="WB_text"]/a[1]/@href')[0] + '/info'
+            href = 'https://weibo.com/{}/info'.format(item['uid'])
             yield from self.user_request(href)
 
     def user_request(self, url):
