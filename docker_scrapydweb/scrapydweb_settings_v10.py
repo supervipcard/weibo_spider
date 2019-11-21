@@ -46,7 +46,7 @@ PASSWORD = 'pl1996317'
 #   - it's recommended to pass in a tuple of 5 elements.
 #   - e.g. ('', '', '127.0.0.1', '6800', '') or ('username', 'password', 'localhost', '6801', 'group')
 SCRAPYD_SERVERS = [
-    '127.0.0.1:6800',
+    '172.19.121.159:6800',
     # 'username:password@localhost:6801#group',
     # ('username', 'password', 'localhost', '6801', 'group'),
 ]
@@ -95,7 +95,7 @@ PRIVATEKEY_FILEPATH = ''
 # ScrapydWeb is able to locate projects in the SCRAPY_PROJECTS_DIR,
 # so that you can simply select a project to deploy, instead of packaging it in advance.
 # e.g. 'C:/Users/username/myprojects' or '/home/username/myprojects'
-SCRAPY_PROJECTS_DIR = '/home/xiangchen/PythonProjects/scrapydweb_test'
+SCRAPY_PROJECTS_DIR = ''
 
 
 ############################## Scrapyd ########################################
