@@ -100,10 +100,10 @@ DNSCACHE_ENABLED = True
 DNSCACHE_SIZE = 1000
 DNS_TIMEOUT = 60
 
-REDIS_HOST = 'localhost'
+REDIS_HOST = '172.19.121.159'
 REDIS_PORT = 6379
 REDIS_PARAMS = {
-    'password': 'test123',
+    'password': 'pl1996317',
     'db': 10
 }
 
@@ -127,10 +127,10 @@ SCHEDULER_FLUSH_ON_START = True    # 是否在开始之前清空调度器和去�
 BLOOMFILTER_BIT = 30
 BLOOMFILTER_HASH_NUMBER = 6
 
-MYSQL_HOST = 'localhost'
+MYSQL_HOST = '172.19.121.159'
 MYSQL_PORT = 3306
-MYSQL_USER = 'test'
-MYSQL_PASSWORD = 'test123'
+MYSQL_USER = 'xiangchen'
+MYSQL_PASSWORD = 'Pl1996317'
 MYSQL_DB = 'weibo_spider'
 MYSQL_CHARSET = 'utf8mb4'
 
