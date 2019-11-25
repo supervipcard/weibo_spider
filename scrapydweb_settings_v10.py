@@ -227,10 +227,10 @@ EMAIL_USERNAME = ''
 # https://stackoverflow.com/a/27515833/10517783 How to send an email with Gmail as the provider using Python?
 # https://stackoverflow.com/a/26053352/10517783 Python smtplib proxy support
 # e.g. 'password4gmail'
-EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD', '')
+EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD', 'nwqihodadverbedf')
 
 # e.g. 'username@gmail.com'
-EMAIL_SENDER = ''
+EMAIL_SENDER = '805071841@qq.com'
 # e.g. ['username@gmail.com', ]
 EMAIL_RECIPIENTS = [EMAIL_SENDER]
 
@@ -241,9 +241,9 @@ EMAIL_RECIPIENTS = [EMAIL_SENDER]
 # Config for https://mail.google.com:           ('smtp.gmail.com', 587, False)
 # Config for https://mail.qq.com using SSL:     ('smtp.qq.com', 465, True)
 # Config for http://mail.10086.cn:              ('smtp.139.com', 25, False)
-SMTP_SERVER = ''
-SMTP_PORT = 0
-SMTP_OVER_SSL = False
+SMTP_SERVER = 'smtp.qq.com'
+SMTP_PORT = 465
+SMTP_OVER_SSL = True
 # The timeout in seconds for the connection attempt, the default is 30.
 SMTP_CONNECTION_TIMEOUT = 30
 
@@ -275,11 +275,11 @@ ENABLE_EMAIL_ALERT = False
 ########## alert working time ##########
 # Monday is 1 and Sunday is 7.
 # e.g, [1, 2, 3, 4, 5, 6, 7]
-ALERT_WORKING_DAYS = []
+ALERT_WORKING_DAYS = [1, 2, 3, 4, 5, 6, 7]
 
 # From 0 to 23.
 # e.g. [9] + list(range(15, 18)) >>> [9, 15, 16, 17], or range(24) for 24 hours
-ALERT_WORKING_HOURS = []
+ALERT_WORKING_HOURS = range(24)
 
 ########## basic triggers ##########
 # Trigger alert every N seconds for each running job.
@@ -288,7 +288,7 @@ ON_JOB_RUNNING_INTERVAL = 0
 
 # Trigger alert when a job is finished.
 # The default is False, set it to True to enable this trigger.
-ON_JOB_FINISHED = False
+ON_JOB_FINISHED = True
 
 ########## advanced triggers ##########
 # - LOG_XXX_THRESHOLD:
@@ -311,9 +311,9 @@ LOG_CRITICAL_THRESHOLD = 0
 LOG_CRITICAL_TRIGGER_STOP = False
 LOG_CRITICAL_TRIGGER_FORCESTOP = False
 
-LOG_ERROR_THRESHOLD = 0
-LOG_ERROR_TRIGGER_STOP = False
-LOG_ERROR_TRIGGER_FORCESTOP = False
+LOG_ERROR_THRESHOLD = 3
+LOG_ERROR_TRIGGER_STOP = True
+LOG_ERROR_TRIGGER_FORCESTOP = True
 
 LOG_WARNING_THRESHOLD = 0
 LOG_WARNING_TRIGGER_STOP = False
@@ -327,9 +327,9 @@ LOG_RETRY_THRESHOLD = 0
 LOG_RETRY_TRIGGER_STOP = False
 LOG_RETRY_TRIGGER_FORCESTOP = False
 
-LOG_IGNORE_THRESHOLD = 0
-LOG_IGNORE_TRIGGER_STOP = False
-LOG_IGNORE_TRIGGER_FORCESTOP = False
+LOG_IGNORE_THRESHOLD = 3
+LOG_IGNORE_TRIGGER_STOP = True
+LOG_IGNORE_TRIGGER_FORCESTOP = True
 
 
 ############################## System #########################################
