@@ -15,18 +15,20 @@ from celery_tasks.tasks import task
 logger = logging.getLogger(__name__)
 
 
-class NotFoundHandleMiddleware(object):
+class UserSpecialMiddleware(object):
     def process_response(self, request, response, spider):
         if request.callback.__name__ == 'user_parse':
-            if response.headers.get('Location') and response.headers['Location'] == b'https://weibo.com/sorry?pagenotfound&':
+            if response.status == 302 and response.headers['Location'] == b'https://weibo.com/sorry?pagenotfound&':
+                logger.info('特殊用户，更换URL再次请求')
                 return request.replace(url=request.url[0: -5])
         return response
 
 
-class ResponseExceptionMiddleware(object):
+class UserErrorMiddleware(object):
     def process_response(self, request, response, spider):
         if request.callback.__name__ == 'user_parse':
-            if not re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?,"html":.*?})\)</script>', response.text):
+            if response.status == 200 and not re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?,"html":.*?})\)</script>', response.text):
+                logger.warning('用户详情页异常，再次请求')
                 request.dont_filter = True
                 return request
         return response
@@ -47,7 +49,7 @@ class CookieMiddleware(object):
                 time.sleep(5)
 
     def process_response(self, request, response, spider):
-        if response.headers.get('Location') and (b'passport.weibo.com/visitor/visitor' in response.headers['Location'] or b'login.sina.com.cn/sso/login.php' in response.headers['Location']):
+        if response.status == 302 and (b'passport.weibo.com/visitor/visitor' in response.headers['Location'] or b'login.sina.com.cn/sso/login.php' in response.headers['Location']):
             logger.warning('登录状态无效：{}'.format(request.meta.get('username')))
             spider.cookie_pool.update_code(request.meta.get('username'), -1)
             task.delay(request.meta.get('username'), request.meta.get('password'))
@@ -63,15 +65,24 @@ class ProxyMiddleware(object):
 
 class AccountExceptionMiddleware(object):
     def process_response(self, request, response, spider):
-        if (
-                (request.callback.__name__ == 'mblog_parse' and '暂时没有内容哦，稍后再来试试吧' in json.loads(response.text)['data'])
-                or (request.callback.__name__ == 'comment_parse' and json.loads(response.text)['data'] in ['https://weibo.com/sorry?userblock&code=20003', 'https://weibo.com/unfreeze'])
-                or (request.callback.__name__ == 'longtext_parse' and json.loads(response.text)['data'] == '')
-        ):
-            logger.warning('账号异常：{}'.format(request.meta.get('username')))
-            spider.cookie_pool.update_code(request.meta.get('username'), -3)
-            request.dont_filter = True
-            return request
+        if request.callback.__name__ == 'mblog_parse':
+            if response.status == 200 and '暂时没有内容哦，稍后再来试试吧' in json.loads(response.text)['data']:
+                logger.warning('账号异常：{}'.format(request.meta.get('username')))
+                spider.cookie_pool.update_code(request.meta.get('username'), -3)
+                request.dont_filter = True
+                return request
+        elif request.callback.__name__ == 'comment_parse':
+            if response.status == 200 and json.loads(response.text)['data'] in ['https://weibo.com/sorry?userblock&code=20003', 'https://weibo.com/unfreeze']:
+                logger.warning('账号异常：{}'.format(request.meta.get('username')))
+                spider.cookie_pool.update_code(request.meta.get('username'), -3)
+                request.dont_filter = True
+                return request
+        elif request.callback.__name__ == 'longtext_parse':
+            if response.status == 200 and json.loads(response.text)['data'] == '':
+                logger.warning('账号异常：{}'.format(request.meta.get('username')))
+                spider.cookie_pool.update_code(request.meta.get('username'), -3)
+                request.dont_filter = True
+                return request
         return response
 
 
