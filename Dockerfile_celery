@@ -1,5 +1,5 @@
 FROM python:3.6.6
-ADD weibo_spider/celery_tasks/ /code
+ADD . /code
 WORKDIR /code
 RUN pip3 install -r requirements.txt
-CMD celery -A celery_tasks worker -P eventlet -l info
+CMD cd weibo_spider && celery -A celery_tasks worker -P eventlet -l info
