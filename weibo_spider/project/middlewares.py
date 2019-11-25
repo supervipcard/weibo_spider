@@ -8,8 +8,11 @@
 import re
 import time
 import json
+import logging
 from scrapy import signals
 from celery_tasks.tasks import task
+
+logger = logging.getLogger(__name__)
 
 
 class NotFoundHandleMiddleware(object):
@@ -45,7 +48,7 @@ class CookieMiddleware(object):
 
     def process_response(self, request, response, spider):
         if response.headers.get('Location') and (b'passport.weibo.com/visitor/visitor' in response.headers['Location'] or b'login.sina.com.cn/sso/login.php' in response.headers['Location']):
-            print('登录状态无效：{}'.format(request.meta.get('username')))
+            logger.warning('登录状态无效：{}'.format(request.meta.get('username')))
             spider.cookie_pool.update_code(request.meta.get('username'), -1)
             task.delay(request.meta.get('username'), request.meta.get('password'))
             request.dont_filter = True
@@ -60,24 +63,15 @@ class ProxyMiddleware(object):
 
 class AccountExceptionMiddleware(object):
     def process_response(self, request, response, spider):
-        if request.callback.__name__ == 'mblog_parse':
-            if '暂时没有内容哦，稍后再来试试吧' in json.loads(response.text)['data']:
-                print('账号异常：{}'.format(request.meta.get('username')))
-                spider.cookie_pool.update_code(request.meta.get('username'), -3)
-                request.dont_filter = True
-                return request
-        if request.callback.__name__ == 'comment_parse':
-            if json.loads(response.text)['data'] in ['https://weibo.com/sorry?userblock&code=20003', 'https://weibo.com/unfreeze']:
-                print('账号异常：{}'.format(request.meta.get('username')))
-                spider.cookie_pool.update_code(request.meta.get('username'), -3)
-                request.dont_filter = True
-                return request
-        if request.callback.__name__ == 'longtext_parse':
-            if json.loads(response.text)['data'] == '':
-                print('账号异常：{}'.format(request.meta.get('username')))
-                spider.cookie_pool.update_code(request.meta.get('username'), -3)
-                request.dont_filter = True
-                return request
+        if (
+                (request.callback.__name__ == 'mblog_parse' and '暂时没有内容哦，稍后再来试试吧' in json.loads(response.text)['data'])
+                or (request.callback.__name__ == 'comment_parse' and json.loads(response.text)['data'] in ['https://weibo.com/sorry?userblock&code=20003', 'https://weibo.com/unfreeze'])
+                or (request.callback.__name__ == 'longtext_parse' and json.loads(response.text)['data'] == '')
+        ):
+            logger.warning('账号异常：{}'.format(request.meta.get('username')))
+            spider.cookie_pool.update_code(request.meta.get('username'), -3)
+            request.dont_filter = True
+            return request
         return response
 
 
