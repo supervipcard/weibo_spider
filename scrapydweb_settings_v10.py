@@ -250,7 +250,7 @@ SMTP_CONNECTION_TIMEOUT = 30
 
 ############################## Monitor & Alert ################################
 # The default is False, set it to True to launch the poll subprocess to monitor your crawling jobs.
-ENABLE_MONITOR = False
+ENABLE_MONITOR = True
 
 ########## poll interval ##########
 # Tip: In order to be notified (and stop or forcestop a job when triggered) in time,
@@ -258,9 +258,9 @@ ENABLE_MONITOR = False
 # at the cost of burdening both CPU and bandwidth of your servers.
 
 # Sleep N seconds before starting next round of poll, the default is 300.
-POLL_ROUND_INTERVAL = 300
+POLL_ROUND_INTERVAL = 10
 # Sleep N seconds between each request to the Scrapyd server while polling, the default is 10.
-POLL_REQUEST_INTERVAL = 10
+POLL_REQUEST_INTERVAL = 1
 
 ########## alert switcher ##########
 # Tip: Set the SCRAPYDWEB_BIND option the in "QUICK SETUP" section to the actual IP of your host,
@@ -270,7 +270,7 @@ POLL_REQUEST_INTERVAL = 10
 # You have to set up your accounts in the "Send text" section above first.
 ENABLE_SLACK_ALERT = False
 ENABLE_TELEGRAM_ALERT = False
-ENABLE_EMAIL_ALERT = False
+ENABLE_EMAIL_ALERT = True
 
 ########## alert working time ##########
 # Monday is 1 and Sunday is 7.
@@ -279,7 +279,7 @@ ALERT_WORKING_DAYS = [1, 2, 3, 4, 5, 6, 7]
 
 # From 0 to 23.
 # e.g. [9] + list(range(15, 18)) >>> [9, 15, 16, 17], or range(24) for 24 hours
-ALERT_WORKING_HOURS = range(24)
+ALERT_WORKING_HOURS = list(range(24))
 
 ########## basic triggers ##########
 # Trigger alert every N seconds for each running job.
@@ -307,9 +307,9 @@ ON_JOB_FINISHED = True
 # Note that the 'STOP' action and the 'FORCESTOP' action would still be executed even when the current time
 # is NOT within the ALERT_WORKING_DAYS and the ALERT_WORKING_HOURS, though no alert would be sent.
 
-LOG_CRITICAL_THRESHOLD = 0
-LOG_CRITICAL_TRIGGER_STOP = False
-LOG_CRITICAL_TRIGGER_FORCESTOP = False
+LOG_CRITICAL_THRESHOLD = 3
+LOG_CRITICAL_TRIGGER_STOP = True
+LOG_CRITICAL_TRIGGER_FORCESTOP = True
 
 LOG_ERROR_THRESHOLD = 3
 LOG_ERROR_TRIGGER_STOP = True
