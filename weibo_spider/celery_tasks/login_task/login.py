@@ -15,7 +15,7 @@ class AccountLogin:
 
         with open('celery_tasks/login_task/rsa.js', 'r', encoding='utf-8') as f:
             source = f.read()
-        external_runtime = execjs.get('JScript')
+        external_runtime = execjs.get()
         self.context = external_runtime.compile(source)
 
         self.caller = Caller()
