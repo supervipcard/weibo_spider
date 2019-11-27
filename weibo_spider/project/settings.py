@@ -60,7 +60,7 @@ DOWNLOADER_MIDDLEWARES = {
     'project.middlewares.AccountExceptionMiddleware': 130,
     'project.middlewares.CookieMiddleware': 650,
     'project.middlewares.UserSpecialMiddleware': 660,
-    'project.middlewares.IPErrorMiddleware': 670,
+    # 'project.middlewares.IPErrorMiddleware': 670,
 }
 
 # Enable or disable extensions
@@ -112,7 +112,7 @@ REDIS_PROXY_KEY = 'adsl'
 DOWNLOAD_TIMEOUT = 10
 
 RETRY_TIMES = 5
-# RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 414]
+RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 408, 429, 414]
 
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.PriorityQueue'
