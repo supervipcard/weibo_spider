@@ -60,6 +60,7 @@ DOWNLOADER_MIDDLEWARES = {
     'project.middlewares.AccountExceptionMiddleware': 130,
     'project.middlewares.CookieMiddleware': 650,
     'project.middlewares.UserSpecialMiddleware': 660,
+    'project.middlewares.IPErrorMiddleware': 670,
 }
 
 # Enable or disable extensions
@@ -106,6 +107,7 @@ REDIS_PARAMS = {
     'password': 'test123',
     'db': 10
 }
+REDIS_PROXY_KEY = 'adsl'
 
 DOWNLOAD_TIMEOUT = 10
 
@@ -118,6 +120,9 @@ SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.PriorityQueue'
 # DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 DUPEFILTER_CLASS = "project.bloomfilter.CustomRFPDupeFilter"
 DUPEFILTER_DEBUG = True
+
+SCHEDULER_QUEUE_KEY = 'weibo:requests'
+SCHEDULER_DUPEFILTER_KEY = 'weibo:dupefilter'
 
 DEPTH_PRIORITY = -1    # 深度优先
 

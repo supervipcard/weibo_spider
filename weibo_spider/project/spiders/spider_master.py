@@ -10,7 +10,7 @@ from ..cookie_pool import CookiePool
 
 
 class WeiboSpider(spiders.RedisSpider):
-    name = 'weibo'
+    name = 'weibo_master'
 
     def __init__(self, *args, **kwargs):
         super(WeiboSpider, self).__init__(*args, **kwargs)
