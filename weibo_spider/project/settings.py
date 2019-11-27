@@ -127,7 +127,7 @@ SCHEDULER_DUPEFILTER_KEY = 'weibo:dupefilter'
 DEPTH_PRIORITY = -1    # 深度优先
 
 SCHEDULER_PERSIST = True    # 是否在关闭时保留原来的调度器和去重记录
-SCHEDULER_FLUSH_ON_START = True    # 是否在开始之前清空调度器和去重记录
+SCHEDULER_FLUSH_ON_START = False    # 是否在开始之前清空调度器和去重记录
 
 BLOOMFILTER_BIT = 30
 BLOOMFILTER_HASH_NUMBER = 6
