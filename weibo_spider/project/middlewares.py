@@ -9,6 +9,7 @@ import re
 import time
 import json
 import logging
+import random
 from scrapy import signals
 from celery_tasks.tasks import task
 
@@ -31,6 +32,16 @@ class UserErrorMiddleware(object):
                 logger.info('用户详情页异常，再次请求')
                 request.dont_filter = True
                 return request
+        return response
+
+
+class IPErrorMiddleware(object):
+    def process_response(self, request, response, spider):
+        if response.status == 414:
+            logger.info('IP被封禁，暂停30秒')
+            time.sleep(30)
+            request.dont_filter = True
+            return request
         return response
 
 
@@ -61,6 +72,25 @@ class CookieMiddleware(object):
 class ProxyMiddleware(object):
     def process_request(self, request, spider):
         request.meta['proxy'] = 'https://xiangchen:pl1996317@101.132.71.2:3129'
+
+
+class ADSLProxyMiddleware(object):
+    def __init__(self, proxy_key):
+        self.proxy_key = proxy_key
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        proxy_key = crawler.settings.get('REDIS_PROXY_KEY')
+        return cls(proxy_key)
+
+    def process_request(self, request, spider):
+        while True:
+            rows = spider.server.hgetall(self.proxy_key)
+            if rows:
+                proxy = random.choice(list(rows.values())).decode('utf-8')
+                request.meta['proxy'] = proxy.replace('http://', 'https://')
+                break
+            time.sleep(1)
 
 
 class AccountExceptionMiddleware(object):
