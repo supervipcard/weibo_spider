@@ -22,7 +22,7 @@ USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 4
+CONCURRENT_REQUESTS = 8
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -55,7 +55,7 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'project.middlewares.ProxyMiddleware': 110,
+    'project.middlewares.ABYProxyMiddleware': 110,
     'project.middlewares.UserErrorMiddleware': 120,
     'project.middlewares.AccountExceptionMiddleware': 130,
     'project.middlewares.CookieMiddleware': 650,
@@ -151,3 +151,8 @@ MYSQL_POOL_TIMEOUT = 30
 
 # LOG_FILE = ''
 LOG_LEVEL = 'INFO'
+
+PROXY_ACCOUNT_LIST = [
+    {'username': 'HSN3ZR07BQOT753D', 'password': 'F11AA38A079DB244'},
+    {'username': 'H889BT3GSSBG3U6D', 'password': 'C4E4EA69296C97B8'},
+]
