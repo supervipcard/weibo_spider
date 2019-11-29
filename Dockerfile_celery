@@ -1,5 +1,5 @@
 FROM env_weibo_spider:latest
-ADD weibo_spider /code
+ADD weibo_spider /code/weibo_spider
 WORKDIR /code
 RUN wget https://npm.taobao.org/mirrors/node/v12.13.1/node-v12.13.1-linux-x64.tar.xz && tar xf node-v12.13.1-linux-x64.tar.xz
 ENV PATH=$PATH:/code/node-v12.13.1-linux-x64/bin
