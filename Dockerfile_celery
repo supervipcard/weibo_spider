@@ -1,7 +1,6 @@
-FROM python:3.6.6
-ADD . /code
+FROM env_weibo_spider:latest
+ADD weibo_spider /code/
 WORKDIR /code
 RUN wget https://npm.taobao.org/mirrors/node/v12.13.1/node-v12.13.1-linux-x64.tar.xz && tar xf node-v12.13.1-linux-x64.tar.xz
 ENV PATH=$PATH:/code/node-v12.13.1-linux-x64/bin
-RUN pip3 install -r requirements.txt
 CMD cd weibo_spider && celery -A celery_tasks worker -P eventlet -l info
