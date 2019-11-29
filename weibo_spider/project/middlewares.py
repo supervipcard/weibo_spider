@@ -21,7 +21,7 @@ class UserSpecialMiddleware(object):
     def process_response(self, request, response, spider):
         if request.callback.__name__ == 'user_parse':
             if response.status == 302 and response.headers['Location'] == b'https://weibo.com/sorry?pagenotfound&':
-                logger.info('特殊用户，更换URL再次请求')
+                logger.info('特殊用户，更换URL再次请求：{}'.format(request.url))
                 return request.replace(url=request.url[0: -5])
         return response
 
@@ -30,7 +30,7 @@ class UserErrorMiddleware(object):
     def process_response(self, request, response, spider):
         if request.callback.__name__ == 'user_parse':
             if response.status == 200 and not re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?,"html":.*?})\)</script>', response.text):
-                logger.info('用户详情页异常，再次请求')
+                logger.info('用户详情页异常，再次请求：{}'.format(request.url))
                 request.dont_filter = True
                 return request
         return response
