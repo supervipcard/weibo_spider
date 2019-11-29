@@ -3,4 +3,5 @@ ADD scrapyd.conf /code/
 WORKDIR /code
 COPY scrapyd.conf /etc/scrapyd/
 EXPOSE 6800
+ENV TZ=Asia/Shanghai
 CMD scrapyd

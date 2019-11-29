@@ -3,4 +3,5 @@ ADD scrapydweb_settings_v10.py /code/
 WORKDIR /code
 EXPOSE 8888
 RUN pip3 install scrapydweb
+ENV TZ=Asia/Shanghai
 CMD scrapydweb
