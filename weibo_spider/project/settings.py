@@ -101,11 +101,11 @@ DNSCACHE_ENABLED = True
 DNSCACHE_SIZE = 1000
 DNS_TIMEOUT = 60
 
-REDIS_HOST = '172.19.121.159'
+REDIS_HOST = 'r-uf6h5xlb6pbi1pk6s5.redis.rds.aliyuncs.com'
 REDIS_PORT = 6379
 REDIS_PARAMS = {
-    'password': 'pl1996317',
-    'db': 10
+    'password': 'Pl1996317',
+    'db': 0
 }
 REDIS_PROXY_KEY = 'adsl'
 
@@ -132,7 +132,7 @@ SCHEDULER_FLUSH_ON_START = False    # 是否在开始之前清空调度器和去
 BLOOMFILTER_BIT = 30
 BLOOMFILTER_HASH_NUMBER = 6
 
-MYSQL_HOST = '172.19.121.159'
+MYSQL_HOST = 'rm-uf6uv29790jnj85iw.mysql.rds.aliyuncs.com'
 MYSQL_PORT = 3306
 MYSQL_USER = 'xiangchen'
 MYSQL_PASSWORD = 'Pl1996317'

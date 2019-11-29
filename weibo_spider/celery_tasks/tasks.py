@@ -3,7 +3,7 @@ import traceback
 from .celery import app
 from .login_task.login import AccountLogin
 
-MYSQL_HOST = '172.19.121.159'
+MYSQL_HOST = 'rm-uf6uv29790jnj85iw.mysql.rds.aliyuncs.com'
 MYSQL_PORT = 3306
 MYSQL_USER = 'xiangchen'
 MYSQL_PASSWORD = 'Pl1996317'
