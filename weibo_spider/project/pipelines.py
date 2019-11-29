@@ -20,9 +20,24 @@ class DataCheckPipeline(object):
             item['content'] = ' '.join([i.strip().replace('\u200b', '') for i in item['content'] if i.strip()]).strip()
             item['picture'] = json.dumps(item['picture'], ensure_ascii=False) if item['picture'] else None
             item['video'] = json.dumps(item['video'], ensure_ascii=False) if item['video'] else None
-            item['forward_count'] = int(item['forward_count']) if item['forward_count'] != '转发' else 0
-            item['comment_count'] = int(item['comment_count']) if item['comment_count'] != '评论' else 0
-            item['like_count'] = int(item['like_count']) if item['like_count'] != '赞' else 0
+            if '转发' in item['forward_count']:
+                item['forward_count'] = 0
+            elif '100万+' in item['forward_count']:
+                item['forward_count'] = 1000000
+            else:
+                item['forward_count'] = int(item['forward_count'])
+            if '评论' in item['comment_count']:
+                item['comment_count'] = 0
+            elif '100万+' in item['comment_count']:
+                item['comment_count'] = 1000000
+            else:
+                item['comment_count'] = int(item['comment_count'])
+            if '赞' in item['like_count']:
+                item['like_count'] = 0
+            elif '100万+' in item['like_count']:
+                item['like_count'] = 1000000
+            else:
+                item['like_count'] = int(item['like_count'])
         if isinstance(item, CommentItem):
             item['content'] = ' '.join([i.strip() for i in item['content'] if i.strip()]).lstrip('：').strip()
             item['picture'] = json.dumps(item['picture'], ensure_ascii=False) if item['picture'] else None
