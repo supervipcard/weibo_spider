@@ -35,7 +35,7 @@ class WeiboSpider(spiders.RedisSpider):
             picture = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_media_prev"]//li[contains(@class, "WB_pic")]//img/@src')
             item['picture'] = ['https:' + re.sub(r'thumb150|orj360', 'mw1024', i) for i in picture]
             video = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_media_prev"]//li[contains(@class, "WB_video")]/@action-data')
-            item['video'] = ['https:' + unquote(re.search(r'video_src=(.*?)&', i).group(1)) for i in video]
+            item['video'] = ['https:' + unquote(re.search(r'video_src=(.*?)&', i).group(1)) for i in video if re.search(r'video_src=(.*?)&', i)]
 
             item['forward_count'] = element.xpath('.//a[@action-type="fl_forward"]//em[2]/text()')[0]
             item['comment_count'] = element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]
