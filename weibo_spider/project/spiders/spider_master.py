@@ -18,7 +18,7 @@ class WeiboSpider(spiders.RedisSpider):
 
     def start_requests(self):
         while True:
-            url = 'https://d.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=102803_ctg1_1760_-_ctg1_1760&pagebar=-1&tab=home&current_page=0&pre_page=1&page=1&pl_name=Pl_Core_NewMixFeed__3&id=102803_ctg1_1760_-_ctg1_1760&script_uri=/&feed_type=1&domain_op=102803_ctg1_1760_-_ctg1_1760&__rnd={}'.format(int(time.time()*1000))
+            url = 'https://d.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=102803_ctg1_1760_-_ctg1_1760&pagebar=0&tab=home&current_page=1&pre_page=1&page=1&pl_name=Pl_Core_NewMixFeed__3&id=102803_ctg1_1760_-_ctg1_1760&script_uri=/&feed_type=1&domain_op=102803_ctg1_1760_-_ctg1_1760&__rnd={}'.format(int(time.time()*1000))
             headers = {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -46,14 +46,19 @@ class WeiboSpider(spiders.RedisSpider):
             video = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_media_prev"]//li[contains(@class, "WB_video")]/@action-data')
             item['video'] = ['https:' + unquote(re.search(r'video_src=(.*?)&', i).group(1)) for i in video if re.search(r'video_src=(.*?)&', i)]
 
-            item['forward_count'] = element.xpath('.//a[@action-type="fl_forward"]//em[2]/text()')[0]
-            item['comment_count'] = element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]
-            item['like_count'] = element.xpath('.//a[@action-type="fl_like"]//em[2]/text()')[0]
+            try:
+                item['forward_count'] = element.xpath('.//a[@action-type="fl_forward"]//em[2]/text()')[0]
+                item['comment_count'] = element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]
+                item['like_count'] = element.xpath('.//a[@action-type="fl_like"]//em[2]/text()')[0]
+            except:
+                self.logger.info('转发评论栏异常，忽略该条微博')
+                continue
+
             if element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_content"]/a[@class="WB_text_opt" and contains(text(), "展开全文")]'):
                 yield from self.longtext_request(item)
             else:
                 yield item
-            href = 'https://weibo.com/{}/info'.format(item['uid'])
+            href = 'https://weibo.com/{}'.format(item['uid'])
             yield from self.user_request(href)
             yield from self.comment_request(mid)
 
@@ -87,15 +92,15 @@ class WeiboSpider(spiders.RedisSpider):
             item['time'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[2]/text()')[0]
             item['like_count'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[1]//a[@action-type="fl_like"]//em[2]/text()')[0]
             yield item
-            href = 'https://weibo.com/{}/info'.format(item['uid'])
+            href = 'https://weibo.com/{}'.format(item['uid'])
             yield from self.user_request(href)
 
     def user_request(self, url):
-        yield scrapy.Request(url=url, meta={'url': url}, callback=self.user_parse)
+        yield scrapy.Request(url=url+'/info', meta={'url': url}, callback=self.user_parse)
 
     def user_parse(self, response):
         item = UserItem()
-        item['url'] = response.meta['url'][0: -5]
+        item['url'] = response.meta['url']
         item['uid'] = re.search(r'\$CONFIG\[\'oid\'\]=\'(.*?)\';', response.text).group(1)
         item['nickname'] = re.search(r'\$CONFIG\[\'onick\'\]=\'(.*?)\';', response.text).group(1)
         html1_text = re.search(r'<script>FM\.view\(({"ns":"pl\.header\.head\.index".*?})\)</script>', response.text).group(1)
