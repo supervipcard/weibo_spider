@@ -29,7 +29,7 @@ class UserSpecialMiddleware(object):
 class UserErrorMiddleware(object):
     def process_response(self, request, response, spider):
         if request.callback.__name__ == 'user_parse':
-            if response.status == 200 and not re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?,"html":.*?})\)</script>', response.text):
+            if response.status == 200 and re.search(r'<script>FM\.view\(({"ns":"pl\.header\.head\.index".*?})\)</script>', response.text) and not re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?,"html":.*?})\)</script>', response.text):
                 logger.info('用户详情页异常，再次请求：{}'.format(request.url))
                 request.dont_filter = True
                 return request
