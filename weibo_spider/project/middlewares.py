@@ -22,7 +22,7 @@ class UserSpecialMiddleware(object):
         if request.callback.__name__ == 'user_parse':
             if response.status == 302 and response.headers['Location'] == b'https://weibo.com/sorry?pagenotfound&':
                 logger.info('特殊用户，更换URL再次请求：{}'.format(request.url))
-                return request.replace(url=request.url[0: -5])
+                return request.replace(url=request.url.replace('/info', ''))
         return response
 
 
@@ -117,7 +117,7 @@ class AccountExceptionMiddleware(object):
                 request.dont_filter = True
                 return request
         elif request.callback.__name__ == 'comment_parse':
-            if response.status == 200 and json.loads(response.text)['data'] in ['https://weibo.com/sorry?userblock&code=20003', 'https://weibo.com/unfreeze']:
+            if response.status == 200 and ('https://weibo.com/sorry?userblock' in json.loads(response.text)['data'] or 'https://weibo.com/unfreeze' in json.loads(response.text)['data']):
                 logger.warning('账号异常：{}'.format(request.meta.get('username')))
                 spider.cookie_pool.update_code(request.meta.get('username'), -3)
                 request.dont_filter = True
