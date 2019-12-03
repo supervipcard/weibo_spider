@@ -112,19 +112,19 @@ class AccountExceptionMiddleware(object):
     def process_response(self, request, response, spider):
         if request.callback.__name__ == 'mblog_parse':
             if response.status == 200 and '暂时没有内容哦，稍后再来试试吧' in json.loads(response.text)['data']:
-                logger.warning('账号异常：{}'.format(request.meta.get('username')))
-                spider.cookie_pool.update_code(request.meta.get('username'), -3)
+                logger.warning('账号异常1：{} ({})'.format(request.meta.get('username'), request.url))
+                # spider.cookie_pool.update_code(request.meta.get('username'), -3)
                 request.dont_filter = True
                 return request
         elif request.callback.__name__ == 'comment_parse':
             if response.status == 200 and ('https://weibo.com/sorry?userblock' in json.loads(response.text)['data'] or 'https://weibo.com/unfreeze' in json.loads(response.text)['data']):
-                logger.warning('账号异常：{}'.format(request.meta.get('username')))
+                logger.warning('账号异常2：{} ({})'.format(request.meta.get('username'), request.url))
                 spider.cookie_pool.update_code(request.meta.get('username'), -3)
                 request.dont_filter = True
                 return request
         elif request.callback.__name__ == 'longtext_parse':
             if response.status == 200 and json.loads(response.text)['data'] == '':
-                logger.warning('账号异常：{}'.format(request.meta.get('username')))
+                logger.warning('账号异常3：{} ({})'.format(request.meta.get('username'), request.url))
                 spider.cookie_pool.update_code(request.meta.get('username'), -3)
                 request.dont_filter = True
                 return request
