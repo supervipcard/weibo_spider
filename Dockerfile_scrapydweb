@@ -1,5 +1,4 @@
 FROM python:3.6.6
-ADD scrapydweb_settings_v10.py /code/
 WORKDIR /code
 EXPOSE 8888
 RUN pip3 install scrapydweb
