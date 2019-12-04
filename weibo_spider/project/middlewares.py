@@ -17,20 +17,21 @@ from celery_tasks.tasks import task
 logger = logging.getLogger(__name__)
 
 
-class UserSpecialMiddleware(object):
+class UserPageExceptionMiddleware1(object):
     def process_response(self, request, response, spider):
         if request.callback.__name__ == 'user_parse':
-            if response.status == 302 and response.headers['Location'] == b'https://weibo.com/sorry?pagenotfound&':
-                logger.info('特殊用户，更换URL再次请求：{}'.format(request.url))
-                return request.replace(url=request.url.replace('/info', ''))
+            if response.status == 302 and b'weibo.com/sorry?pagenotfound' in response.headers['Location']:
+                logger.warning('用户详情页异常1，再次请求：{}'.format(request.url))
+                request.dont_filter = True
+                return request
         return response
 
 
-class UserErrorMiddleware(object):
+class UserPageExceptionMiddleware2(object):
     def process_response(self, request, response, spider):
         if request.callback.__name__ == 'user_parse':
             if response.status == 200 and re.search(r'<script>FM\.view\(({"ns":"pl\.header\.head\.index".*?})\)</script>', response.text) and not re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?,"html":.*?})\)</script>', response.text):
-                logger.info('用户详情页异常，再次请求：{}'.format(request.url))
+                logger.warning('用户详情页异常2，再次请求：{}'.format(request.url))
                 request.dont_filter = True
                 return request
         return response
@@ -39,7 +40,7 @@ class UserErrorMiddleware(object):
 class IPErrorMiddleware(object):
     def process_response(self, request, response, spider):
         if response.status == 414:
-            logger.info('IP被封禁，暂停30秒')
+            logger.warning('IP被封禁，暂停30秒')
             time.sleep(30)
             request.dont_filter = True
             return request
@@ -48,17 +49,18 @@ class IPErrorMiddleware(object):
 
 class CookieMiddleware(object):
     def process_request(self, request, spider):
-        while True:
-            result = spider.cookie_pool.select()
-            if result:
-                username, password, cookies = result
-                request.meta['username'] = username
-                request.meta['password'] = password
-                if cookies:
-                    request.headers['Cookie'] = cookies
-                break
-            else:
-                time.sleep(5)
+        if not request.meta.get('acc_exc_count'):
+            while True:
+                result = spider.cookie_pool.select()
+                if result:
+                    username, password, cookies = result
+                    request.meta['username'] = username
+                    request.meta['password'] = password
+                    if cookies:
+                        request.headers['Cookie'] = cookies
+                    break
+                else:
+                    time.sleep(5)
 
     def process_response(self, request, response, spider):
         if response.status == 302 and (b'passport.weibo.com/visitor/visitor' in response.headers['Location'] or b'login.sina.com.cn/sso/login.php' in response.headers['Location']):
@@ -110,24 +112,28 @@ class ADSLProxyMiddleware(object):
 
 class AccountExceptionMiddleware(object):
     def process_response(self, request, response, spider):
+        exception_sign = False
         if request.callback.__name__ == 'mblog_parse':
             if response.status == 200 and '暂时没有内容哦，稍后再来试试吧' in json.loads(response.text)['data']:
-                logger.warning('账号异常1：{} ({})'.format(request.meta.get('username'), request.url))
-                # spider.cookie_pool.update_code(request.meta.get('username'), -3)
-                request.dont_filter = True
-                return request
+                exception_sign = True
         elif request.callback.__name__ == 'comment_parse':
             if response.status == 200 and ('https://weibo.com/sorry?userblock' in json.loads(response.text)['data'] or 'https://weibo.com/unfreeze' in json.loads(response.text)['data']):
-                logger.warning('账号异常2：{} ({})'.format(request.meta.get('username'), request.url))
-                spider.cookie_pool.update_code(request.meta.get('username'), -3)
-                request.dont_filter = True
-                return request
+                exception_sign = True
         elif request.callback.__name__ == 'longtext_parse':
             if response.status == 200 and json.loads(response.text)['data'] == '':
-                logger.warning('账号异常3：{} ({})'.format(request.meta.get('username'), request.url))
+                exception_sign = True
+        if exception_sign:
+            logger.warning('账号疑似异常，再次请求：{}'.format(request.meta.get('username')))
+            retryreq = request.copy()
+            retryreq.dont_filter = True
+            acc_exc_count = request.meta.get('acc_exc_count', 0) + 1
+            if acc_exc_count >= 3:
+                logger.warning('账号异常：{}'.format(request.meta.get('username')))
                 spider.cookie_pool.update_code(request.meta.get('username'), -3)
-                request.dont_filter = True
-                return request
+                retryreq.meta.pop('acc_exc_count')
+            else:
+                retryreq.meta['acc_exc_count'] = acc_exc_count
+            return retryreq
         return response
 
 
