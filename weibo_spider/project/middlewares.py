@@ -49,18 +49,17 @@ class IPErrorMiddleware(object):
 
 class CookieMiddleware(object):
     def process_request(self, request, spider):
-        if not request.meta.get('acc_exc_count'):
-            while True:
-                result = spider.cookie_pool.select()
-                if result:
-                    username, password, cookies = result
-                    request.meta['username'] = username
-                    request.meta['password'] = password
-                    if cookies:
-                        request.headers['Cookie'] = cookies
-                    break
-                else:
-                    time.sleep(5)
+        while True:
+            result = spider.cookie_pool.select()
+            if result:
+                username, password, cookies = result
+                request.meta['username'] = username
+                request.meta['password'] = password
+                if cookies:
+                    request.headers['Cookie'] = cookies
+                break
+            else:
+                time.sleep(5)
 
     def process_response(self, request, response, spider):
         if response.status == 302 and (b'passport.weibo.com/visitor/visitor' in response.headers['Location'] or b'login.sina.com.cn/sso/login.php' in response.headers['Location']):
@@ -123,17 +122,10 @@ class AccountExceptionMiddleware(object):
             if response.status == 200 and json.loads(response.text)['data'] == '':
                 exception_sign = True
         if exception_sign:
-            logger.warning('账号疑似异常，再次请求：{}'.format(request.meta.get('username')))
-            retryreq = request.copy()
-            retryreq.dont_filter = True
-            acc_exc_count = request.meta.get('acc_exc_count', 0) + 1
-            if acc_exc_count >= 3:
-                logger.warning('账号异常：{}'.format(request.meta.get('username')))
-                spider.cookie_pool.update_code(request.meta.get('username'), -3)
-                retryreq.meta.pop('acc_exc_count')
-            else:
-                retryreq.meta['acc_exc_count'] = acc_exc_count
-            return retryreq
+            logger.warning('账号异常：{}'.format(request.meta.get('username')))
+            spider.cookie_pool.update_code(request.meta.get('username'), -3)
+            request.dont_filter = True
+            return request
         return response
 
 
