@@ -11,6 +11,11 @@ from ..cookie_pool import CookiePool
 
 class WeiboSpider(spiders.RedisSpider):
     name = 'weibo_master'
+    custom_settings = {
+        'EXTENSIONS': {
+            'project.extensions.ResetCodeExtensions': 0,
+        }
+    }
 
     def __init__(self, *args, **kwargs):
         super(WeiboSpider, self).__init__(*args, **kwargs)

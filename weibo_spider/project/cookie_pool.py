@@ -20,3 +20,8 @@ class CookiePool(object):
         sql = 'update cookie_pool_wb set code=%s where username=%s'
         with self.mysql_engine.connect() as conn:
             conn.execute(sql, (code, username))
+
+    def reset_code(self):
+        sql = 'update cookie_pool_wb set code=%s'
+        with self.mysql_engine.connect() as conn:
+            conn.execute(sql, (1,))

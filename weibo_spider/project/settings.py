@@ -155,3 +155,5 @@ PROXY_ACCOUNT_LIST = [
     {'username': 'HSN3ZR07BQOT753D', 'password': 'F11AA38A079DB244'},
     {'username': 'H889BT3GSSBG3U6D', 'password': 'C4E4EA69296C97B8'},
 ]
+
+RESET_CODE_INTERVAL = 3600
