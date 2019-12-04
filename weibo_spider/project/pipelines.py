@@ -57,6 +57,7 @@ class DataCheckPipeline(object):
             item['headPortrait'] = item['headPortrait'] if item['headPortrait'] != '//ww1.sinaimg.cn/default/images/default_avatar_male_uploading_180.gif' else None
             item['membershipGrade'] = int(re.search(r'icon_member(\d)', item['membershipGrade'][0]).group(1)) if item['membershipGrade'] and re.search(r'icon_member(\d)', item['membershipGrade'][0]) else None
             item['identity'] = item['identity'][0].strip() if item['identity'] else None
+            item['identity'] = item['identity'] if item['identity'] else None
             item['realName'] = item['realName'][0].strip() if item.get('realName') else None
             item['area'] = item['area'][0].strip() if item.get('area') else None
             item['sex'] = item['sex'][0].strip() if item.get('sex') else None
@@ -77,8 +78,17 @@ class DataCheckPipeline(object):
             item['following'] = int(item['following'])
             item['followers'] = int(item['followers'])
             item['mblogNum'] = int(item['mblogNum'])
-            if item['identity'] == item['intro']:
-                item['identity'] = None
+            if item['approveType']:
+                if 'icon_pf_approve_co' in item['approveType'][0]:
+                    item['approveType'] = '官方认证'
+                elif 'icon_pf_approve_gold' in item['approveType'][0]:
+                    item['approveType'] = '金V认证'
+                elif 'icon_pf_approve' in item['approveType'][0]:
+                    item['approveType'] = '个人认证'
+                else:
+                    item['approveType'] = None
+            else:
+                item['approveType'] = None
         return item
 
 
@@ -87,7 +97,7 @@ class SqlPipeline(object):
         self.db_conn = pool
         self.mblog_sql = 'insert ignore into mblog values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
         self.comment_sql = 'insert ignore into comment values (%s, %s, %s, %s, %s, %s, %s, %s)'
-        self.user_sql = 'insert ignore into user values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
+        self.user_sql = 'insert ignore into user values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'
 
     @classmethod
     def from_settings(cls, settings):
@@ -109,7 +119,7 @@ class SqlPipeline(object):
                                               item['picture'], item['time'], item['like_count'], datetime.now()])
         if isinstance(item, UserItem):
             cursor.execute(self.user_sql, [item['uid'], item['nickname'], item['headPortrait'], item['membershipGrade'],
-                                           item['identity'], item['realName'], item['area'], item['sex'],
+                                           item['approveType'], item['identity'], item['realName'], item['area'], item['sex'],
                                            item['sexualOrientation'], item['relationshipStatus'], item['birthday'],
                                            item['bloodType'], item['blog'], item['intro'],item['registrationDate'],
                                            item['domainHacks'], item['email'], item['qq'],item['msn'],

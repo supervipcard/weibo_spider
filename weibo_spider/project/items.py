@@ -37,6 +37,7 @@ class UserItem(scrapy.Item):
     nickname = scrapy.Field()
     headPortrait = scrapy.Field()
     membershipGrade = scrapy.Field()
+    approveType = scrapy.Field()
     identity = scrapy.Field()
     realName = scrapy.Field()
     area = scrapy.Field()

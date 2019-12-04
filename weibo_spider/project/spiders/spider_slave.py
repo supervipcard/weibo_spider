@@ -42,15 +42,15 @@ class WeiboSpider(spiders.RedisSpider):
                 item['comment_count'] = element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]
                 item['like_count'] = element.xpath('.//a[@action-type="fl_like"]//em[2]/text()')[0]
             except:
-                self.logger.info('转发评论栏异常，忽略该条微博')
+                self.logger.warning('转发评论栏异常，忽略该条微博')
                 continue
 
             if element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_content"]/a[@class="WB_text_opt" and contains(text(), "展开全文")]'):
                 yield from self.longtext_request(item)
             else:
                 yield item
-            href = 'https://weibo.com/{}'.format(item['uid'])
-            yield from self.user_request(href)
+            official = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@class="WB_info"]/a/i[@title="微博官方认证"]')
+            yield from self.user_request(item['uid'], bool(official))
             yield from self.comment_request(mid)
 
     def comment_request(self, mid):
@@ -83,23 +83,25 @@ class WeiboSpider(spiders.RedisSpider):
             item['time'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[2]/text()')[0]
             item['like_count'] = element.xpath('./div[@node-type="replywrap"]/div[contains(@class, "WB_func")]/div[1]//a[@action-type="fl_like"]//em[2]/text()')[0]
             yield item
-            href = 'https://weibo.com/{}'.format(item['uid'])
-            yield from self.user_request(href)
+            official = element.xpath('./div[@node-type="replywrap"]/div[@class="WB_text"]/a/i[@title="微博官方认证"]')
+            yield from self.user_request(item['uid'], bool(official))
 
-    def user_request(self, url):
-        yield scrapy.Request(url=url+'/info', meta={'url': url}, callback=self.user_parse)
+    def user_request(self, uid, official):
+        url = 'https://weibo.com/{}'.format(uid) if official else 'https://weibo.com/{}/info'.format(uid)
+        yield scrapy.Request(url=url, meta={'uid': uid}, callback=self.user_parse)
 
     def user_parse(self, response):
         item = UserItem()
-        item['url'] = response.meta['url']
-        item['uid'] = re.search(r'\$CONFIG\[\'oid\'\]=\'(.*?)\';', response.text).group(1)
+        item['uid'] = response.meta['uid']
+        item['url'] = 'https://weibo.com/{}'.format(item['uid'])
         item['nickname'] = re.search(r'\$CONFIG\[\'onick\'\]=\'(.*?)\';', response.text).group(1)
         html1_text = re.search(r'<script>FM\.view\(({"ns":"pl\.header\.head\.index".*?})\)</script>', response.text).group(1)
         html1_text = json.loads(html1_text)['html']
         html1 = etree.HTML(html1_text)
         item['headPortrait'] = html1.xpath('//p[@class="photo_wrap"]/img/@src')[0]
         item['membershipGrade'] = html1.xpath('//div[@class="pf_username"]/a[@title="微博会员"]/em/@class')
-        item['identity'] = html1.xpath('//div[@class="pf_intro"]/@title')
+        item['approveType'] = html1.xpath('//div[@class="pf_photo"]/a/em/@class')
+        item['identity'] = html1.xpath('//div[@class="pf_photo"]/a/em/@title')
 
         match = re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Official_PersonalInfo.*?})\)</script>', response.text)
         if match:

@@ -56,11 +56,10 @@ DEFAULT_REQUEST_HEADERS = {
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'project.middlewares.ABYProxyMiddleware': 110,
-    'project.middlewares.UserErrorMiddleware': 120,
+    'project.middlewares.UserPageExceptionMiddleware2': 120,
     'project.middlewares.AccountExceptionMiddleware': 130,
-    'project.middlewares.CookieMiddleware': 650,
-    'project.middlewares.UserSpecialMiddleware': 660,
-    # 'project.middlewares.IPErrorMiddleware': 670,
+    'project.middlewares.UserPageExceptionMiddleware1': 650,
+    'project.middlewares.CookieMiddleware': 660,
 }
 
 # Enable or disable extensions
