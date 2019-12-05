@@ -49,17 +49,18 @@ class IPErrorMiddleware(object):
 
 class CookieMiddleware(object):
     def process_request(self, request, spider):
-        while True:
-            result = spider.cookie_pool.select()
-            if result:
-                username, password, cookies = result
-                request.meta['username'] = username
-                request.meta['password'] = password
-                if cookies:
-                    request.headers['Cookie'] = cookies
-                break
-            else:
-                time.sleep(5)
+        result = spider.cookie_pool.select()
+        if result:
+            username, password, cookies = result
+            request.meta['username'] = username
+            request.meta['password'] = password
+            if cookies:
+                request.headers['Cookie'] = cookies
+        else:
+            if spider.name == 'weibo_master':
+                spider.cookie_pool.reset_code()
+            request.dont_filter = True
+            return request
 
     def process_response(self, request, response, spider):
         if response.status == 302 and (b'passport.weibo.com/visitor/visitor' in response.headers['Location'] or b'login.sina.com.cn/sso/login.php' in response.headers['Location']):
