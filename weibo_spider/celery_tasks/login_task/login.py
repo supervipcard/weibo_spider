@@ -162,3 +162,13 @@ class AccountLogin:
         url = 'https://weibo.com/1192336151?is_ori=1'
         response = self.req.get(url=url)
         return response.text
+
+    def check7(self):
+        url = 'https://weibo.com/1192336151/follow'
+        response = self.req.get(url=url)
+        return response.text
+
+    def check8(self):
+        url = 'https://weibo.com/1192336151/follow?relate=fans'
+        response = self.req.get(url=url)
+        return response.text

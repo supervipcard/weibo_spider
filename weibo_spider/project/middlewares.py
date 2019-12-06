@@ -121,7 +121,7 @@ class AccountExceptionMiddleware(object):
         elif request.callback.__name__ == 'longtext_parse':
             if response.status == 200 and json.loads(response.text)['data'] == '':
                 exception_sign = True
-        elif request.callback.__name__ in ['user_parse', 'user_mblog_parse']:
+        elif request.callback.__name__ in ['user_parse', 'user_mblog_parse', 'user_follow_parse']:
             if response.status == 200 and "$CONFIG['uid']=" not in response.text:
                 exception_sign = True
         if exception_sign:

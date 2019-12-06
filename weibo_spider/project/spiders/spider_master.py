@@ -22,19 +22,18 @@ class WeiboSpider(spiders.RedisSpider):
         self.cookie_pool = CookiePool()
 
     def start_requests(self):
-        # while True:
-            url = 'https://d.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=102803_ctg1_1760_-_ctg1_1760&pagebar=0&tab=home&current_page=1&pre_page=1&page=1&pl_name=Pl_Core_NewMixFeed__3&id=102803_ctg1_1760_-_ctg1_1760&script_uri=/&feed_type=1&domain_op=102803_ctg1_1760_-_ctg1_1760&__rnd={}'.format(int(time.time()*1000))
-            headers = {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-            yield scrapy.Request(url=url, headers=headers, dont_filter=True, callback=self.mblog_parse)
+        url = 'https://d.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=102803_ctg1_1760_-_ctg1_1760&pagebar=0&tab=home&current_page=1&pre_page=1&page=1&pl_name=Pl_Core_NewMixFeed__3&id=102803_ctg1_1760_-_ctg1_1760&script_uri=/&feed_type=1&domain_op=102803_ctg1_1760_-_ctg1_1760&__rnd={}'.format(int(time.time()*1000))
+        headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        yield scrapy.Request(url=url, headers=headers, dont_filter=True, callback=self.mblog_parse)
 
     def mblog_parse(self, response):
         data = json.loads(response.text)['data']
         html = etree.HTML(data)
         elements = html.xpath('//div[@mid]')
-        for element in elements[0: 1]:
+        for element in elements:
             mid = element.attrib['mid']
 
             item = MBlogItem()
@@ -174,8 +173,13 @@ class WeiboSpider(spiders.RedisSpider):
         item['followers'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[2]//strong/text()')[0]
         item['mblogNum'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[3]//strong/text()')[0]
         yield item
-        if int(html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[3]//strong/text()')[0]) > 0:
-            yield from self.user_mblog_request(item['uid'])
+        if response.meta['depth'] <= 10:
+            if int(html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[3]//strong/text()')[0]) > 0:
+                yield from self.user_mblog_request(item['uid'])
+            # if int(html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[1]//strong/text()')[0]) > 0:
+            #     yield from self.user_following_request(item['uid'])
+            # if int(html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[2]//strong/text()')[0]) > 0:
+            #     yield from self.user_followers_request(item['uid'])
 
     def user_mblog_request(self, uid):
         url = 'https://weibo.com/{}?is_ori=1'.format(uid)
@@ -219,6 +223,26 @@ class WeiboSpider(spiders.RedisSpider):
             if '评论' not in element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]:
                 yield from self.comment_request(mid)
 
+    def user_following_request(self, uid):
+        url = 'https://weibo.com/{}/follow'.format(uid)
+        yield scrapy.Request(url=url, callback=self.user_follow_parse)
+
+    def user_followers_request(self, uid):
+        url = 'https://weibo.com/{}/follow?relate=fans'.format(uid)
+        yield scrapy.Request(url=url, callback=self.user_follow_parse)
+
+    def user_follow_parse(self, response):
+        html_text = re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Official_HisRelation__.*?,"html":.*?})\)</script>', response.text).group(1)
+        html_text = json.loads(html_text)['html']
+        html = etree.HTML(html_text)
+        elements = html.xpath('//ul[@node-type="userListBox"]/li')
+        for element in elements:
+            match = re.search(r'uid=(\d+)&', element.xpath('./@action-data')[0])
+            if match:
+                uid = match.group(1)
+                official = element.xpath('.//a/i[@title="微博官方认证"]')
+                yield from self.user_request(uid, bool(official))
+
     def longtext_request(self, item):
         url = 'https://d.weibo.com/p/aj/mblog/getlongtext?ajwvr=6&mid={}&is_settop&is_sethot&is_setfanstop&is_setyoudao&__rnd=1573536761190'.format(item['mid'])
         headers = {
@@ -233,5 +257,5 @@ class WeiboSpider(spiders.RedisSpider):
         data = json.loads(response.text)['data']['html']
         data = '<body>' + data + '</body>'
         html = etree.HTML(data)
-        item['content'] = html.xpath('body/text() | body/a[@class="a_topic"]/text() | body/img/@title')
+        item['content'] = html.xpath('body/text() | body/a[@class="a_topic"]/text() | body/a[@extra-data="type=atname"]/text() | body/img/@title')
         yield item

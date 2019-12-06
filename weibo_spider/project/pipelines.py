@@ -39,7 +39,7 @@ class DataCheckPipeline(object):
             else:
                 item['like_count'] = int(item['like_count'])
         if isinstance(item, CommentItem):
-            item['content'] = ' '.join([i.strip() for i in item['content'] if i.strip()]).lstrip('：').strip()
+            item['content'] = ' '.join([i.strip().replace('\u200b', '') for i in item['content'] if i.strip()]).lstrip('：').strip()
             item['picture'] = json.dumps(item['picture'], ensure_ascii=False) if item['picture'] else None
             item['like_count'] = int(item['like_count']) if item['like_count'] != '赞' else 0
             item['time'] = re.sub(r'第\d+楼', '', item['time']).strip()
