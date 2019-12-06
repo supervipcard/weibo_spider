@@ -20,7 +20,7 @@ class WeiboSpider(spiders.RedisSpider):
         data = json.loads(response.text)['data']
         html = etree.HTML(data)
         elements = html.xpath('//div[@mid]')
-        for element in elements:
+        for element in elements[0: 1]:
             mid = element.attrib['mid']
 
             item = MBlogItem()
@@ -51,7 +51,8 @@ class WeiboSpider(spiders.RedisSpider):
                 yield item
             official = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@class="WB_info"]/a/i[@title="微博官方认证"]')
             yield from self.user_request(item['uid'], bool(official))
-            yield from self.comment_request(mid)
+            if '评论' not in element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]:
+                yield from self.comment_request(mid)
 
     def comment_request(self, mid):
         """只取第一页评论"""
@@ -159,6 +160,50 @@ class WeiboSpider(spiders.RedisSpider):
         item['followers'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[2]//strong/text()')[0]
         item['mblogNum'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[3]//strong/text()')[0]
         yield item
+        if int(html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[3]//strong/text()')[0]) > 0:
+            yield from self.user_mblog_request(item['uid'])
+
+    def user_mblog_request(self, uid):
+        url = 'https://weibo.com/{}?is_ori=1'.format(uid)
+        yield scrapy.Request(url=url, callback=self.user_mblog_parse)
+
+    def user_mblog_parse(self, response):
+        html_text = re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Official_MyProfileFeed__.*?,"html":.*?})\)</script>', response.text).group(1)
+        html_text = json.loads(html_text)['html']
+        html = etree.HTML(html_text)
+        elements = html.xpath('//div[@mid]')
+        for element in elements:
+            mid = element.attrib['mid']
+
+            item = MBlogItem()
+            item['mid'] = mid
+            item['uid'] = re.search('ouid=(\d+)', element.attrib['tbinfo']).group(1)
+            item['url'] = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]//a[@node-type="feed_list_item_date"]/@href')[0]
+            item['url'] = 'https://weibo.com' + item['url'].split('?')[0]
+            item['time'] = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]//a[@node-type="feed_list_item_date"]/@title')[0]
+            item['source'] = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]//a[@action-type="app_source"]/text()')
+
+            content = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_content"]')[0]
+            item['content'] = content.xpath('./text() | ./a[@class="a_topic"]/text() | ./a[@extra-data="type=atname"]/text() | ./img/@title')
+            picture = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_media_prev"]//li[contains(@class, "WB_pic")]//img/@src')
+            item['picture'] = ['https:' + re.sub(r'thumb150|orj360', 'mw1024', i) for i in picture]
+            video = element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_media_prev"]//li[contains(@class, "WB_video")]/@action-data')
+            item['video'] = ['https:' + unquote(re.search(r'video_src=(.*?)&', i).group(1)) for i in video if re.search(r'video_src=(.*?)&', i)]
+
+            try:
+                item['forward_count'] = element.xpath('.//a[@action-type="fl_forward"]//em[2]/text()')[0]
+                item['comment_count'] = element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]
+                item['like_count'] = element.xpath('.//a[@action-type="fl_like"]//em[2]/text()')[0]
+            except:
+                self.logger.warning('转发评论栏异常，忽略该条微博')
+                continue
+
+            if element.xpath('./div[@node-type="feed_content"]/div[@class="WB_detail"]/div[@node-type="feed_list_content"]/a[@class="WB_text_opt" and contains(text(), "展开全文")]'):
+                yield from self.longtext_request(item)
+            else:
+                yield item
+            if '评论' not in element.xpath('.//a[@action-type="fl_comment"]//em[2]/text()')[0]:
+                yield from self.comment_request(mid)
 
     def longtext_request(self, item):
         url = 'https://d.weibo.com/p/aj/mblog/getlongtext?ajwvr=6&mid={}&is_settop&is_sethot&is_setfanstop&is_setyoudao&__rnd=1573536761190'.format(item['mid'])
