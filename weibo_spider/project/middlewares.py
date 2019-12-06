@@ -49,18 +49,17 @@ class IPErrorMiddleware(object):
 
 class CookieMiddleware(object):
     def process_request(self, request, spider):
-        result = spider.cookie_pool.select()
-        if result:
-            username, password, cookies = result
-            request.meta['username'] = username
-            request.meta['password'] = password
-            if cookies:
-                request.headers['Cookie'] = cookies
-        else:
-            if spider.name == 'weibo_master':
-                spider.cookie_pool.reset_code()
-            request.dont_filter = True
-            return request
+        while True:
+            result = spider.cookie_pool.select()
+            if result:
+                username, password, cookies = result
+                request.meta['username'] = username
+                request.meta['password'] = password
+                if cookies:
+                    request.headers['Cookie'] = cookies
+                break
+            else:
+                time.sleep(1)
 
     def process_response(self, request, response, spider):
         if response.status == 302 and (b'passport.weibo.com/visitor/visitor' in response.headers['Location'] or b'login.sina.com.cn/sso/login.php' in response.headers['Location']):
@@ -122,9 +121,13 @@ class AccountExceptionMiddleware(object):
         elif request.callback.__name__ == 'longtext_parse':
             if response.status == 200 and json.loads(response.text)['data'] == '':
                 exception_sign = True
+        elif request.callback.__name__ in ['user_parse', 'user_mblog_parse']:
+            if response.status == 200 and "$CONFIG['uid']=" not in response.text:
+                exception_sign = True
         if exception_sign:
-            logger.warning('账号异常：{}'.format(request.meta.get('username')))
+            logger.warning('账号疑似异常：{}'.format(request.meta.get('username')))
             spider.cookie_pool.update_code(request.meta.get('username'), -3)
+            task.delay(request.meta.get('username'), request.meta.get('password'))
             request.dont_filter = True
             return request
         return response

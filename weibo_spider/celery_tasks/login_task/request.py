@@ -1,6 +1,11 @@
 import requests
 from retrying import retry
 
+PROXY_HOST = "http-dyn.abuyun.com"
+PROXY_PORT = "9020"
+PROXY_USER = 'HSN3ZR07BQOT753D'
+PROXY_PASS = 'F11AA38A079DB244'
+
 
 class Request:
     base_headers = {
@@ -14,33 +19,33 @@ class Request:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers = self.base_headers
-        # self.session.proxies = self.get_proxies()
+        self.session.proxies = self.get_proxies()
 
     @staticmethod
     def get_proxies():
         proxyMeta = "http://%(user)s:%(pass)s@%(host)s:%(port)s" % {
-            "host": '',
-            "port": '',
-            "user": '',
-            "pass": '',
+            "host": PROXY_HOST,
+            "port": PROXY_PORT,
+            "user": PROXY_USER,
+            "pass": PROXY_PASS,
         }
         proxies = {
-            "http": 'http://xiangchen:pl1996317@101.132.71.2:3129',
-            "https": 'http://xiangchen:pl1996317@101.132.71.2:3129',
+            "http": proxyMeta,
+            "https": proxyMeta,
         }
         return proxies
 
     @retry(stop_max_attempt_number=5, wait_fixed=1000)
-    def get(self, url, headers=None, params=None, cookies=None):
-        response = self.session.get(url=url, headers=headers, params=params, cookies=cookies, timeout=10)
+    def get(self, url, **kwargs):
+        response = self.session.get(url=url, timeout=10, **kwargs)
         if response.status_code == 200:
             return response
         else:
             raise ConnectionError
 
     @retry(stop_max_attempt_number=5, wait_fixed=1000)
-    def post(self, url, headers=None, data=None, cookies=None, files=None):
-        response = self.session.post(url=url, headers=headers, data=data, cookies=cookies, files=files, timeout=10)
+    def post(self, url, **kwargs):
+        response = self.session.post(url=url, timeout=10, **kwargs)
         if response.status_code == 200:
             return response
         else:

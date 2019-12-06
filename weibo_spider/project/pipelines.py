@@ -51,6 +51,8 @@ class DataCheckPipeline(object):
                 item['time'] = item['time'].replace('今天', datetime.now().strftime('%Y-%m-%d'))
             elif '月' in item['time'] and '日' in item['time'] and '年' not in item['time']:
                 item['time'] = str(datetime.now().year) + '-' + item['time'].replace('月', '-').replace('日', '')
+            elif re.search(r'\d+-\d+-\d+ \d+:\d+', item['time']):
+                pass
             else:
                 raise Exception('评论时间无法解析')
         if isinstance(item, UserItem):
