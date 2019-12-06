@@ -57,7 +57,7 @@ DEFAULT_REQUEST_HEADERS = {
 DOWNLOADER_MIDDLEWARES = {
     'project.middlewares.ABYProxyMiddleware': 110,
     'project.middlewares.UserPageExceptionMiddleware2': 120,
-    'project.middlewares.AccountExceptionMiddleware': 130,
+    'project.middlewares.AccountExceptionMiddleware': 150,
     'project.middlewares.UserPageExceptionMiddleware1': 650,
     'project.middlewares.CookieMiddleware': 660,
 }
@@ -123,7 +123,7 @@ DUPEFILTER_DEBUG = True
 SCHEDULER_QUEUE_KEY = 'weibo:requests'
 SCHEDULER_DUPEFILTER_KEY = 'weibo:dupefilter'
 
-DEPTH_PRIORITY = -1    # 深度优先
+DEPTH_PRIORITY = 1    # 广度优先
 
 SCHEDULER_PERSIST = True    # 是否在关闭时保留原来的调度器和去重记录
 SCHEDULER_FLUSH_ON_START = False    # 是否在开始之前清空调度器和去重记录
