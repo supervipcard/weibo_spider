@@ -241,8 +241,11 @@ class WeiboSpider(spiders.RedisSpider):
     def longtext_parse(self, response):
         item = response.meta['item']
 
-        data = json.loads(response.text)['data']['html']
-        data = '<body>' + data + '</body>'
-        html = etree.HTML(data)
-        item['content'] = html.xpath('body/text() | body/a[@class="a_topic"]/text() | body/a[@extra-data="type=atname"]/text() | body/img/@title')
-        yield item
+        data = json.loads(response.text)['data']
+        if data:
+            html_text = '<body>' + data['html'] + '</body>'
+            html = etree.HTML(html_text)
+            item['content'] = html.xpath('body/text() | body/a[@class="a_topic"]/text() | body/a[@extra-data="type=atname"]/text() | body/img/@title')
+            yield item
+        else:
+            self.logger.warning('{} <{}>'.format(json.loads(response.text), response.url))
