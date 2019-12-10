@@ -119,13 +119,13 @@ class AccountExceptionMiddleware(object):
             if response.status == 200 and ('https://weibo.com/sorry?userblock' in json.loads(response.text)['data'] or 'https://weibo.com/unfreeze' in json.loads(response.text)['data']):
                 exception_sign = True
         elif request.callback.__name__ == 'longtext_parse':
-            if response.status == 200 and json.loads(response.text)['data'] == '':
+            if response.status == 200 and response.text == '{"code":"100001","msg":"","data":""}':
                 exception_sign = True
         elif request.callback.__name__ in ['user_parse', 'user_mblog_parse', 'user_follow_parse']:
             if response.status == 200 and "$CONFIG['uid']=" not in response.text:
                 exception_sign = True
         if exception_sign:
-            logger.warning('账号疑似异常：{}'.format(request.meta.get('username')))
+            logger.warning('账号疑似异常：{} <{}>'.format(request.meta.get('username'), request.url))
             spider.cookie_pool.update_code(request.meta.get('username'), -3)
             task.delay(request.meta.get('username'), request.meta.get('password'))
             request.dont_filter = True
