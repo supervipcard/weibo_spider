@@ -12,6 +12,7 @@ import base64
 import logging
 import random
 from scrapy import signals
+from scrapy.exceptions import IgnoreRequest
 from celery_tasks.tasks import task
 
 logger = logging.getLogger(__name__)
@@ -128,8 +129,16 @@ class AccountExceptionMiddleware(object):
             logger.warning('账号疑似异常：{} <{}>'.format(request.meta.get('username'), request.url))
             spider.cookie_pool.update_code(request.meta.get('username'), -3)
             task.delay(request.meta.get('username'), request.meta.get('password'))
-            request.dont_filter = True
-            return request
+
+            retries = request.meta.get('acc_exc_retry_times', 0) + 1
+            if retries <= 3:
+                retryreq = request.copy()
+                retryreq.meta['acc_exc_retry_times'] = retries
+                retryreq.dont_filter = True
+                return retryreq
+            else:
+                logger.warning('忽略该请求：{} <{}>'.format(request.meta.get('username'), request.url))
+                raise IgnoreRequest
         return response
 
 
