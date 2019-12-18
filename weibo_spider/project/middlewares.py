@@ -23,8 +23,15 @@ class UserPageExceptionMiddleware1(object):
         if request.callback.__name__ == 'user_parse':
             if response.status == 302 and b'weibo.com/sorry?pagenotfound' in response.headers['Location']:
                 logger.warning('用户详情页异常1，再次请求：{}'.format(request.url))
-                request.dont_filter = True
-                return request
+                retries = request.meta.get('userpage_exc_retry_times1', 0) + 1
+                if retries <= 3:
+                    retryreq = request.copy()
+                    retryreq.meta['userpage_exc_retry_times1'] = retries
+                    retryreq.dont_filter = True
+                    return retryreq
+                else:
+                    logger.warning('忽略该请求1：{} <{}>'.format(request.meta.get('username'), request.url))
+                    raise IgnoreRequest
         return response
 
 
@@ -33,8 +40,15 @@ class UserPageExceptionMiddleware2(object):
         if request.callback.__name__ == 'user_parse':
             if response.status == 200 and re.search(r'<script>FM\.view\(({"ns":"pl\.header\.head\.index".*?})\)</script>', response.text) and not re.search(r'<script>FM\.view\(({.*?"domid":"Pl_Core_T8CustomTriColumn.*?,"html":.*?})\)</script>', response.text):
                 logger.warning('用户详情页异常2，再次请求：{}'.format(request.url))
-                request.dont_filter = True
-                return request
+                retries = request.meta.get('userpage_exc_retry_times2', 0) + 1
+                if retries <= 3:
+                    retryreq = request.copy()
+                    retryreq.meta['userpage_exc_retry_times2'] = retries
+                    retryreq.dont_filter = True
+                    return retryreq
+                else:
+                    logger.warning('忽略该请求2：{} <{}>'.format(request.meta.get('username'), request.url))
+                    raise IgnoreRequest
         return response
 
 

@@ -160,7 +160,7 @@ class WeiboSpider(spiders.RedisSpider):
         item['followers'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[2]//strong/text()')[0]
         item['mblogNum'] = html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[3]//strong/text()')[0]
         yield item
-        if response.meta['depth'] <= 20:
+        if response.meta['depth'] <= 18:
             if int(html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[3]//strong/text()')[0]) > 0:
                 yield from self.user_mblog_request(item['uid'])
             # if int(html3.xpath('//table[@class="tb_counter"]/tbody/tr/td[1]//strong/text()')[0]) > 0:
