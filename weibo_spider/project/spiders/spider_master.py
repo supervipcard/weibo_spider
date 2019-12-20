@@ -14,6 +14,7 @@ class WeiboSpider(spiders.RedisSpider):
     custom_settings = {
         'EXTENSIONS': {
             'project.extensions.ResetCodeExtensions': 0,
+            'project.extensions.RestartExtensions': 0,
         }
     }
 
@@ -21,13 +22,13 @@ class WeiboSpider(spiders.RedisSpider):
         super(WeiboSpider, self).__init__(*args, **kwargs)
         self.cookie_pool = CookiePool()
 
-    def start_requests(self):
+    def make_requests_from_url(self, url):
         url = 'https://d.weibo.com/p/aj/v6/mblog/mbloglist?ajwvr=6&domain=102803_ctg1_1760_-_ctg1_1760&pagebar=0&tab=home&current_page=1&pre_page=1&page=1&pl_name=Pl_Core_NewMixFeed__3&id=102803_ctg1_1760_-_ctg1_1760&script_uri=/&feed_type=1&domain_op=102803_ctg1_1760_-_ctg1_1760&__rnd={}'.format(int(time.time()*1000))
         headers = {
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
-        yield scrapy.Request(url=url, headers=headers, dont_filter=True, callback=self.mblog_parse)
+        return scrapy.Request(url=url, headers=headers, dont_filter=True, callback=self.mblog_parse)
 
     def mblog_parse(self, response):
         data = json.loads(response.text)['data']
