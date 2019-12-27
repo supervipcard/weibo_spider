@@ -48,7 +48,7 @@ PASSWORD = 'pl1996317'
 SCRAPYD_SERVERS = [
     '172.19.121.159:6800',
     # '172.19.140.155:6800',
-    '172.19.140.156:6800',
+    # '172.19.140.156:6800',
     # 'username:password@localhost:6801#group',
     # ('username', 'password', 'localhost', '6801', 'group'),
 ]
