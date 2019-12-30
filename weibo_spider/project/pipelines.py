@@ -103,7 +103,7 @@ class SqlPipeline(object):
 
     @classmethod
     def from_settings(cls, settings):
-        pool = adbapi.ConnectionPool('pymysql', host=settings['MYSQL_HOST'], port=settings['MYSQL_PORT'], user=settings['MYSQL_USER'], passwd=settings['MYSQL_PASSWORD'], db=settings['MYSQL_DB'], charset=settings['MYSQL_CHARSET'])
+        pool = adbapi.ConnectionPool('pymysql', host=settings['MYSQL_HOST'], port=settings['MYSQL_PORT'], user=settings['MYSQL_USER'], passwd=settings['MYSQL_PASSWORD'], db=settings['MYSQL_DB'], charset=settings['MYSQL_CHARSET'], cp_reconnect=True)
         return cls(pool)
 
     def process_item(self, item, spider):
