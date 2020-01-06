@@ -2,13 +2,7 @@ import pymysql
 import traceback
 from .celery import app
 from .login_task.login import AccountLogin
-
-MYSQL_HOST = 'localhost'
-MYSQL_PORT = 3306
-MYSQL_USER = 'test'
-MYSQL_PASSWORD = 'test123'
-MYSQL_DB = 'weibo_spider'
-MYSQL_CHARSET = 'utf8mb4'
+from .settings import *
 
 
 @app.task
