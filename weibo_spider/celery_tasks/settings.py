@@ -1,7 +1,7 @@
-MYSQL_HOST = 'localhost'
+MYSQL_HOST = 'rm-uf6uv29790jnj85iw.mysql.rds.aliyuncs.com'
 MYSQL_PORT = 3306
-MYSQL_USER = 'test'
-MYSQL_PASSWORD = 'test123'
+MYSQL_USER = 'xiangchen'
+MYSQL_PASSWORD = 'Pl1996317'
 MYSQL_DB = 'weibo_spider'
 MYSQL_CHARSET = 'utf8mb4'
 
