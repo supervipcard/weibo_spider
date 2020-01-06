@@ -1,10 +1,6 @@
 import requests
 from retrying import retry
-
-PROXY_HOST = "http-dyn.abuyun.com"
-PROXY_PORT = "9020"
-PROXY_USER = 'HSN3ZR07BQOT753D'
-PROXY_PASS = 'F11AA38A079DB244'
+from ..settings import *
 
 
 class Request:
@@ -23,12 +19,7 @@ class Request:
 
     @staticmethod
     def get_proxies():
-        proxyMeta = "http://%(user)s:%(pass)s@%(host)s:%(port)s" % {
-            "host": PROXY_HOST,
-            "port": PROXY_PORT,
-            "user": PROXY_USER,
-            "pass": PROXY_PASS,
-        }
+        proxyMeta = "http://{user}:{password}@http-dyn.abuyun.com:9020".format(user=PROXY_USER, password=PROXY_PASSWORD)
         proxies = {
             "http": proxyMeta,
             "https": proxyMeta,

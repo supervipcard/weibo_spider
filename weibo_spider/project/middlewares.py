@@ -86,11 +86,6 @@ class CookieMiddleware(object):
         return response
 
 
-class ProxyMiddleware(object):
-    def process_request(self, request, spider):
-        request.meta['proxy'] = 'https://xiangchen:pl1996317@101.132.71.2:3129'
-
-
 class ABYProxyMiddleware(object):
     def __init__(self, proxyAccountList):
         self.proxyAuthList = ["Basic " + base64.urlsafe_b64encode(bytes((proxyAccount['username'] + ":" + proxyAccount['password']), "ascii")).decode("utf8") for proxyAccount in proxyAccountList]
