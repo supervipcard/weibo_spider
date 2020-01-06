@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+  celery:
+    container_name: celery
+    build:
+      context: .
+      dockerfile: Dockerfile_celery
+    image: celery:latest
+    volumes:
+      - ./weibo_spider/celery_tasks:/code/celery_tasks
+    env_file:
+      - ./.env
+
+  scrapyd:
+    container_name: scrapyd
+    build:
+      context: .
+      dockerfile: Dockerfile_scrapyd
+    image: scrapyd:latest
+    volumes:
+      - ./scrapyd.conf:/etc/scrapyd/scrapyd.conf
+    ports:
+      - 6800:6800
+    env_file:
+      - ./.env
+
+  scrapydweb:
+    container_name: scrapydweb
+    build:
+      context: .
+      dockerfile: Dockerfile_scrapydweb
+    image: scrapydweb:latest
+    volumes:
+      - ./scrapydweb_settings_v10.py:/code/scrapydweb_settings_v10.py
+    ports:
+      - 8888:8888
