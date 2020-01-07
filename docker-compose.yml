@@ -7,6 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile_celery
     image: celery:latest
+    restart: always
     volumes:
       - ./weibo_spider/celery_tasks:/code/celery_tasks
     env_file:
@@ -18,6 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile_scrapyd
     image: scrapyd:latest
+    restart: always
     volumes:
       - ./scrapyd.conf:/etc/scrapyd/scrapyd.conf
     ports:
@@ -31,6 +33,7 @@ services:
       context: .
       dockerfile: Dockerfile_scrapydweb
     image: scrapydweb:latest
+    restart: always
     volumes:
       - ./scrapydweb_settings_v10.py:/code/scrapydweb_settings_v10.py
     ports:
