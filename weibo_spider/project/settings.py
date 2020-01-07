@@ -9,6 +9,8 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
+
 BOT_NAME = 'project'
 
 SPIDER_MODULES = ['project.spiders']
@@ -100,11 +102,11 @@ DNSCACHE_ENABLED = True
 DNSCACHE_SIZE = 1000
 DNS_TIMEOUT = 60
 
-REDIS_HOST = 'r-uf6h5xlb6pbi1pk6s5.redis.rds.aliyuncs.com'
-REDIS_PORT = 6379
+REDIS_HOST = os.environ.get('REDIS_HOST', '')
+REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
 REDIS_PARAMS = {
-    'password': 'Pl1996317',
-    'db': 0
+    'password': os.environ.get('REDIS_PASSWORD', ''),
+    'db': os.environ.get('REDIS_DB', 0)
 }
 REDIS_PROXY_KEY = 'adsl'
 
@@ -131,12 +133,12 @@ SCHEDULER_FLUSH_ON_START = False    # 是否在开始之前清空调度器和去
 BLOOMFILTER_BIT = 30
 BLOOMFILTER_HASH_NUMBER = 6
 
-MYSQL_HOST = 'rm-uf6uv29790jnj85iw.mysql.rds.aliyuncs.com'
-MYSQL_PORT = 3306
-MYSQL_USER = 'xiangchen'
-MYSQL_PASSWORD = 'Pl1996317'
-MYSQL_DB = 'weibo_spider'
-MYSQL_CHARSET = 'utf8mb4'
+MYSQL_HOST = os.environ.get('MYSQL_HOST', '')
+MYSQL_PORT = os.environ.get('MYSQL_PORT', 3306)
+MYSQL_USER = os.environ.get('MYSQL_USER', '')
+MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
+MYSQL_DB = os.environ.get('MYSQL_DB', 'weibo_spider')
+MYSQL_CHARSET = os.environ.get('MYSQL_CHARSET', 'utf8mb4')
 
 MYSQL_KEY = "mysql+pymysql://{user}:{password}@{host}:{port}/{db}?charset={charset}".format(
     user=MYSQL_USER, password=MYSQL_PASSWORD, host=MYSQL_HOST, port=MYSQL_PORT, db=MYSQL_DB, charset=MYSQL_CHARSET)
@@ -152,8 +154,8 @@ MYSQL_POOL_TIMEOUT = 30
 LOG_LEVEL = 'INFO'
 
 PROXY_ACCOUNT_LIST = [
-    {'username': 'HSN3ZR07BQOT753D', 'password': 'F11AA38A079DB244'},
-    {'username': 'H889BT3GSSBG3U6D', 'password': 'C4E4EA69296C97B8'},
+    {'username': os.environ['PROXY_USER1'], 'password': os.environ['PROXY_PASSWORD1']},
+    {'username': os.environ['PROXY_USER2'], 'password': os.environ['PROXY_PASSWORD2']},
 ]
 
 RESET_CODE_INTERVAL = 3600

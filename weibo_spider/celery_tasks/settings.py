@@ -1,9 +1,11 @@
-MYSQL_HOST = 'rm-uf6uv29790jnj85iw.mysql.rds.aliyuncs.com'
-MYSQL_PORT = 3306
-MYSQL_USER = 'xiangchen'
-MYSQL_PASSWORD = 'Pl1996317'
-MYSQL_DB = 'weibo_spider'
-MYSQL_CHARSET = 'utf8mb4'
+import os
 
-PROXY_USER = 'HSN3ZR07BQOT753D'
-PROXY_PASSWORD = 'F11AA38A079DB244'
+MYSQL_HOST = os.environ.get('MYSQL_HOST', '')
+MYSQL_PORT = os.environ.get('MYSQL_PORT', 3306)
+MYSQL_USER = os.environ.get('MYSQL_USER', '')
+MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
+MYSQL_DB = os.environ.get('MYSQL_DB', 'weibo_spider')
+MYSQL_CHARSET = os.environ.get('MYSQL_CHARSET', 'utf8mb4')
+
+PROXY_USER = os.environ['PROXY_USER1']
+PROXY_PASSWORD = os.environ['PROXY_PASSWORD1']

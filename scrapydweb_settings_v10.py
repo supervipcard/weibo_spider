@@ -22,8 +22,8 @@ SCRAPYDWEB_PORT = 8888
 # The default is False, set it to True to enable basic auth for the web UI.
 ENABLE_AUTH = True
 # In order to enable basic auth, both USERNAME and PASSWORD should be non-empty strings.
-USERNAME = 'xiangchen'
-PASSWORD = 'pl1996317'
+USERNAME = os.environ.get('SCRAPYDWEB_USER', '')
+PASSWORD = os.environ.get('SCRAPYDWEB_PASSWORD', '')
 
 
 # Make sure that [Scrapyd](https://github.com/scrapy/scrapyd) has been installed
@@ -229,7 +229,7 @@ EMAIL_USERNAME = ''
 # https://stackoverflow.com/a/27515833/10517783 How to send an email with Gmail as the provider using Python?
 # https://stackoverflow.com/a/26053352/10517783 Python smtplib proxy support
 # e.g. 'password4gmail'
-EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD', 'nwqihodadverbedf')
+EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD', '')
 
 # e.g. 'username@gmail.com'
 EMAIL_SENDER = '805071841@qq.com'

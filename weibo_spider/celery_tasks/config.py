@@ -1,4 +1,11 @@
-BROKER_URL = 'redis://:Pl1996317@r-uf6h5xlb6pbi1pk6s5.redis.rds.aliyuncs.com:6379/1'
+import os
+
+BROKER_URL = 'redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'.format(
+    REDIS_HOST=os.environ.get('REDIS_HOST', ''),
+    REDIS_PORT=os.environ.get('REDIS_PORT', 6379),
+    REDIS_PASSWORD=os.environ.get('REDIS_PASSWORD', ''),
+    REDIS_DB=os.environ.get('REDIS_DB', 1)
+)
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERYD_CONCURRENCY = 1

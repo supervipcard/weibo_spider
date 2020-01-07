@@ -35,3 +35,5 @@ services:
       - ./scrapydweb_settings_v10.py:/code/scrapydweb_settings_v10.py
     ports:
       - 8888:8888
+    env_file:
+      - ./.env
