@@ -15,7 +15,7 @@ class Request:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers = self.base_headers
-        self.session.proxies = self.get_proxies()
+        # self.session.proxies = self.get_proxies()
 
     @staticmethod
     def get_proxies():
